@@ -10,22 +10,25 @@ where = ["src"]
 namespaces = false
 
 [project]
-name = "ml_template"
+name = "ml_tools"
 dynamic = ["version", "optional-dependencies"]
 keywords = []
 description = "A machine learning template"
 requires-python = ">=3.8"
 readme = "README.md"
-dependencies = []
+dependencies = [
+    "pandas",
+    "numpy"
+]
 license = {text = "open source"}
 
 [project.urls]
-homepage = ""
+homepage = "https://github.com/Hunterb9101/ml-tools"
 
 [tool.setuptools.dynamic]
-version = {attr = "ml_template"}
+version = {attr = "ml_tools.__version__"}
 optional-dependencies.tests = {file = ["reqs/test.txt"]}
 
 [tool.isort]
 sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
-known_first_party = "ml_template"
+known_first_party = "ml_tools"
