@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "build"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
+[project]
+name = "ml_template"
+dynamic = ["version", "optional-dependencies"]
+keywords = []
+description = "A machine learning template"
+requires-python = ">=3.8"
+readme = "README.md"
+dependencies = []
+license = {text = "open source"}
+
+[project.urls]
+homepage = ""
+
+[tool.setuptools.dynamic]
+version = {attr = "ml_template"}
+optional-dependencies.tests = {file = ["reqs/test.txt"]}
+
+[tool.isort]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+known_first_party = "ml_template"
