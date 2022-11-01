@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Callable, Union
 import warnings
 
 import numpy as np
@@ -9,7 +9,7 @@ class MockColumn():
     def __init__(
         self,
         name: str,
-        distribution: Optional[callable] = None,
+        distribution: Optional[Callable] = None,
         distribution_kwargs: Dict[str, Any] = None,
         redundant_of: Optional[str] = None,
         is_useful: bool = True
@@ -53,8 +53,8 @@ class MockManagerClassification:
     def columns(self, value: List[str]):
         self._columns = value
 
-        self._useful = []
-        self._useless = []
+        self._useful: List[Union[MockColumn, DupColumn]] = []
+        self._useless: List[Union[MockColumn, DupColumn]] = []
         self._redundant = []
 
         for c in self.columns:
@@ -68,7 +68,7 @@ class MockManagerClassification:
     def __init__(
         self,
         n_rows: int,
-        columns: List[MockColumn],
+        columns: List[Union[MockColumn, DupColumn]],
         idx_cols: Optional[List[str]] = None,
         target_col: Optional[str] = "y",
         class_balance: float = 0.5,
@@ -91,12 +91,12 @@ class MockManagerClassification:
     def _generate_X(self) -> pd.DataFrame:
         np.random.seed(self.seed)
         data = {}
-        for i, c in enumerate(self.idx_cols):
-            data[c] = np.arange(self.n_rows) * (i + 1)
+        for i, idx in enumerate(self.idx_cols):
+            data[idx] = np.arange(self.n_rows) * (i + 1)
         for c in self._useful + self._useless:
             data[c.name] = c.distribution(size=self.n_rows, **c.distribution_kwargs)
-        for c in self._redundant:
-            data[c.name] = data[c.redundant_of]
+        for r in self._redundant:
+            data[r.name] = data[r.redundant_of]
         return pd.DataFrame.from_dict(data)
 
     def _generate_Y(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -128,7 +128,7 @@ def linearly_separable_data(
     idx_cols: List[str] = None,
     target_col: str = "y"
 ):
-    columns = []
+    columns: List[Union[MockColumn, DupColumn]] = []
     idx_cols = idx_cols or []
     if add_redundant:
         for i in range(n_useful_cols):
