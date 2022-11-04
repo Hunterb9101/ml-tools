@@ -63,10 +63,16 @@ def test_range_validation(ser, expected, schema_obj_1):
     assert cond == expected
 
 
+def test_range_valdation_scrambled_indices(schema_obj_1):
+    df = pd.DataFrame([{"idx": 3, "a": 2}, {"idx": 1, "a": 5}, {"idx": 2, "a": 1}])
+    df.set_index("idx", inplace=True)
+    illegal = mtv._illegal_values(df["a"], schema_obj_1)
+    assert illegal.tolist() == [5]
+
+
 def test_validate_data(int_schema):
     data = pd.DataFrame([{"a": i + 1, "b": i * 2 + 1, "c": i * 3 + 2} for i in range(20)])
     msgs = mtv.validate_data(data=data, schema=int_schema)
-    print(msgs)
     assert len(msgs) == 0
 
 

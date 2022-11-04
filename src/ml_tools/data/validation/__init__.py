@@ -24,14 +24,51 @@ def _validate_dtype(col: pd.Series, s: mts.SchemaObj) -> bool:
     return True
 
 
-def _illegal_values(col: pd.Series, s: mts.SchemaObj) -> pd.Series:
+def _illegal_values_idx(col: pd.Series, s: mts.SchemaObj) -> pd.Series:
+    """
+    Return the indices where invalid values exist.
+    TODO: Add np.NaN handling here.
+
+    Parameters
+    ----------
+    col: pd.Series
+    s: hfs.SchemaObj
+
+    Returns
+    -------
+    pd.Series
+        A series of indices with illegal values.
+    """
     sers = []
     if len(s.valid_vals) == 0:
         return pd.Series([], dtype='float64')
     for chk in s.valid_vals:
         sers.append(pd.Series(chk.contains(col)))
-    cond_df = pd.concat(sers, axis=1).sum(axis=1)
-    return cond_df[cond_df == 0]
+
+    cond = pd.concat(sers, axis=1).sum(axis=1)
+    illegal = pd.Series(cond[cond == 0].index)
+    return illegal
+
+
+def _illegal_values(col: pd.Series, s: mts.SchemaObj) -> pd.Series:
+    """
+    Return a list of invalid values that exist within `col`
+
+    Parameters
+    ----------
+    col: pd.Series
+    s: hfs.SchemaObj
+
+    Returns
+    -------
+    pd.Series
+        A series of unique illegal values
+    """
+    illegal = _illegal_values_idx(col=col, s=s)
+    illegal_vals = pd.Series(col.iloc[illegal].unique())
+    if s.nullable:
+        illegal_vals = illegal_vals[~pd.isnull(illegal_vals)]
+    return illegal_vals
 
 
 def validate_data(data: pd.DataFrame, schema: List[mts.SchemaObj]) -> List[str]:
