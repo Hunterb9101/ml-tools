@@ -1,6 +1,7 @@
 # pylint: disable=W0621,W0212
 import pytest
 import pandas as pd
+import numpy as np
 
 import ml_tools.data.validation as mtv
 import ml_tools.data.validation.schema as mts
@@ -96,6 +97,12 @@ def test_validate_data_non_nullable():
     msgs = mtv.validate_data(data=data, schema=schema)
     assert len(msgs) == 1
 
+
+def test_validate_data_nullable():
+    schema = [mts.SchemaObj(column='a', dtype='float64', valid_vals=[mts.SchemaRange(minval=0)])]
+    data = pd.DataFrame([{"a": None if i % 2 == 0 else np.NaN} for i in range(20)])
+    msgs = mtv.validate_data(data=data, schema=schema)
+    assert len(msgs) == 0
 
 @pytest.mark.parametrize("data", [
     # Do not allow decimals in integer columns

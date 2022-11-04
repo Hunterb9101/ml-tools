@@ -1,6 +1,7 @@
 from typing import List
 
 import pandas as pd
+import numpy as np
 
 import ml_tools.data.validation.schema as mts
 
@@ -61,9 +62,11 @@ def validate_data(data: pd.DataFrame, schema: List[mts.SchemaObj]) -> List[str]:
             messages.append(f"Invalid datatype for {col}. Found: {data[col].dtype}, Expected: {s.dtype}")
             continue
 
-        illegal_vals = _illegal_values(data[col], s)
+        illegal_vals = np.array(data[col].iloc[_illegal_values(data[col], s)].unique())
+        if s.nullable:
+            illegal_vals = illegal_vals[~pd.isnull(illegal_vals)]
         if not len(illegal_vals) == 0:
-            messages.append(f"Found illegal values {data[col].iloc[illegal_vals].unique()} in {col}.")
+            messages.append(f"Found illegal values {illegal_vals} in {col}.")
         if not s.nullable and data[col].isna().sum() > 0:
             messages.append(f"Found null values in non-nullable column {col}.")
     return messages

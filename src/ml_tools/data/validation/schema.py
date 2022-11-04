@@ -86,6 +86,14 @@ class SchemaObj:
         self.valid_vals = valid_vals if valid_vals else []
         self.nullable = nullable
 
+    def to_dict(self) -> List[Dict[str, Any]]:
+        return {
+            "column": self.column,
+            "dtype": self.dtype,
+            "valid_vals": [vv.to_dict() for vv in self.valid_vals],
+            "nullable": self.nullable
+        }
+
 
 def dict_to_valid_vals(input_dict: Dict[str, Any]) -> Union[SchemaRange, SchemaList]:
     input_dict = input_dict.copy()
