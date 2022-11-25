@@ -109,7 +109,6 @@ class MockManagerClassification:
 
     def generate(self) -> pd.DataFrame:
         X = self._generate_X()
-        print(X.head(2))
         if self.target_col:
             y = self._generate_Y(X)
             X[self.target_col] = y

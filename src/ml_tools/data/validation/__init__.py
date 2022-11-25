@@ -26,8 +26,7 @@ def _validate_dtype(col: pd.Series, s: mts.SchemaObj) -> bool:
 
 def _illegal_values_idx(col: pd.Series, s: mts.SchemaObj) -> pd.Series:
     """
-    Return the indices where invalid values exist.
-    TODO: Add np.NaN handling here.
+    Return the indices where invalid values exist
 
     Parameters
     ----------
@@ -44,26 +43,11 @@ def _illegal_values_idx(col: pd.Series, s: mts.SchemaObj) -> pd.Series:
         return pd.Series([], dtype='float64')
     for chk in s.valid_vals:
         sers.append(pd.Series(chk.contains(col)))
-
-    cond = pd.concat(sers, axis=1).sum(axis=1)
-    illegal = pd.Series(cond[cond == 0].index)
-    return illegal
+    cond_df = pd.concat(sers, axis=1).sum(axis=1)
+    return pd.Series(cond_df[cond_df == 0].index)
 
 
 def _illegal_values(col: pd.Series, s: mts.SchemaObj) -> pd.Series:
-    """
-    Return a list of invalid values that exist within `col`
-
-    Parameters
-    ----------
-    col: pd.Series
-    s: hfs.SchemaObj
-
-    Returns
-    -------
-    pd.Series
-        A series of unique illegal values
-    """
     illegal = _illegal_values_idx(col=col, s=s)
     illegal_vals = pd.Series(col.iloc[illegal].unique())
     if s.nullable:
@@ -93,17 +77,17 @@ def validate_data(data: pd.DataFrame, schema: List[mts.SchemaObj]) -> List[str]:
     for s in schema:
         col = s.column
         if col not in data.columns:
-            messages.append(f"Required column {col} not found")
+            messages.append(f"Required column {col} not found.")
             continue
         if not _validate_dtype(data[col], s):
-            messages.append(f"Invalid datatype for {col}. Found: {data[col].dtype}, Expected: {s.dtype}")
+            messages.append(f"Invalid datatype for {col}: {data[col].dtype}, expected: {s.dtype}.")
             continue
 
-        illegal_vals = np.array(data[col].iloc[_illegal_values(data[col], s)].unique())
-        if s.nullable:
-            illegal_vals = illegal_vals[~pd.isnull(illegal_vals)]
+        illegal_vals = _illegal_values(data[col], s).tolist()
         if not len(illegal_vals) == 0:
-            messages.append(f"Found illegal values {illegal_vals} in {col}.")
+            messages.append(f"Found illegal values {illegal_vals} in {col}, " \
+                f"expected value in [{', '.join([str(x) for x in s.valid_vals])}]."
+            )
         if not s.nullable and data[col].isna().sum() > 0:
             messages.append(f"Found null values in non-nullable column {col}.")
     return messages

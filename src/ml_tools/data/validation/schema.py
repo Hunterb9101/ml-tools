@@ -21,7 +21,7 @@ class SchemaRange:
         if minval and maxval:
             assert minval < maxval
         if minval is None and maxval is None:
-            raise ValueError(f"Minval or Maxval must be set. Got minval={minval} and maxval={maxval}")
+            raise ValueError(f"Minval or Maxval must be set, got minval={minval} and maxval={maxval}.")
 
     def contains(self, ser: Sequence) -> np.ndarray:
         if not isinstance(ser, np.ndarray):
@@ -55,6 +55,11 @@ class SchemaRange:
     def __eq__(self, other) -> bool:
         return self.to_dict() == self.to_dict() if isinstance(self, type(other)) else False
 
+    def __str__(self) -> str:
+        lower_bound_char = '[' if self.include_lb else '('
+        upper_bound_char = ']' if self.include_ub else ')'
+        return f"Range{lower_bound_char}{self.minval}, {self.maxval}{upper_bound_char}"
+
 
 class SchemaList:
     def __init__(self, vals: List[Any]):
@@ -72,6 +77,10 @@ class SchemaList:
 
     def __eq__(self, other) -> bool:
         return self.to_dict() == self.to_dict() if isinstance(self, type(other)) else False
+
+    def __str__(self) -> str:
+        return f"List[{', '.join([str(x) for x in self.vals])}]"
+
 
 class SchemaObj:
     def __init__(
@@ -101,8 +110,8 @@ def dict_to_valid_vals(input_dict: Dict[str, Any]) -> Union[SchemaRange, SchemaL
         return SchemaRange(**input_dict)
     if ("minval" not in input_dict.keys() and "maxval" not in input_dict.keys()) and "vals" in input_dict.keys():
         return SchemaList(**input_dict)
-    raise ValueError(f"Unable to parse valid ranges for {input_dict}. " \
-        "Make sure only a range or a list of values are provided per entry."
+    raise ValueError(f"Unable to parse valid ranges for {input_dict}, " \
+        "make sure only a range or a list of values are provided per entry."
     )
 
 

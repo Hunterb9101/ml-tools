@@ -127,3 +127,9 @@ def test_mock_mgr_gen_y_thresholds(schema_1, threshold):
     df = mock_mgr._generate_X()
     y = mock_mgr._generate_Y(df)
     assert np.isclose(y.mean(), threshold, atol=0.02)
+
+
+def test_linearly_separable_data():
+    data = core.linearly_separable_data(n_rows=100)
+    assert len(data) == 100
+    assert "y" in data.columns
