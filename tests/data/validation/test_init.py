@@ -63,7 +63,7 @@ def test_range_validation(ser, expected, schema_obj_1):
     assert cond == expected
 
 
-def test_range_valdation_scrambled_indices(schema_obj_1):
+def test_range_validation_scrambled_indices(schema_obj_1):
     df = pd.DataFrame([{"idx": 3, "a": 2}, {"idx": 1, "a": 5}, {"idx": 2, "a": 1}])
     df.set_index("idx", inplace=True)
     illegal = mtv._illegal_values(df["a"], schema_obj_1)
@@ -109,6 +109,7 @@ def test_validate_data_nullable():
     data = pd.DataFrame([{"a": None if i % 2 == 0 else np.NaN} for i in range(20)])
     msgs = mtv.validate_data(data=data, schema=schema)
     assert len(msgs) == 0
+
 
 @pytest.mark.parametrize("data", [
     # Do not allow decimals in integer columns

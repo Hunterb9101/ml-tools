@@ -18,7 +18,8 @@ requires-python = ">=3.8"
 readme = "README.md"
 dependencies = [
     "pandas",
-    "numpy"
+    "numpy",
+    "scipy"
 ]
 license = {text = "open source"}
 
