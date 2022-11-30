@@ -16,11 +16,31 @@ def test_counts_by_category():
     ])
     assert df.equals(expected)
 
+@pytest.mark.parametrize("n_type", ["series", "list", None])
+@pytest.mark.parametrize("m_type", ["series", "list", None])
+def test_counts_by_quantile(n_type, m_type):
+    n = np.random.uniform(0, 1, size=1000)
+    m = np.random.uniform(0, 1, size=1000)
+
+    if n_type == "series":
+        n = pd.Series(n, name="Column")
+    elif n_type == "list":
+        n = n.tolist()
+
+    if m_type == "series":
+        m = pd.Series(m, name="Column")
+    elif m_type == "list":
+        m = m.tolist()
+
+    df = mtds._counts_by_quantile(n, m)
+    assert df["old"].sum() > 995
+    assert df["new"].sum() > 995
+
 
 def test_si():
     n = np.random.uniform(0, 1, size=1000)
     m = np.random.uniform(0, 1, size=1000)
-    mtds.si(new=n, old=m, bins=10)
+    assert mtds.si(new=n, old=m, bins=10) < 0.2
 
 
 @pytest.mark.parametrize("method", ['chisq', 'industry', 'norm'])

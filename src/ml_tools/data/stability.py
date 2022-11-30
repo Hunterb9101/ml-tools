@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Sequence
 import logging
 
 import numpy as np
@@ -8,7 +8,7 @@ import scipy.stats as ss
 import ml_tools.pandas as mtp
 
 
-def si(old: pd.Series, new: pd.Series, bins: int=10, is_categorical: bool = False) -> float:
+def si(old: Sequence, new: Sequence, bins: int=10, is_categorical: bool = False) -> float:
     """
     Calculate a stability index between two series. Input target scores for a
     Population Stability Index (PSI), or continuous feature samples for a Characteristic
@@ -33,7 +33,7 @@ def si(old: pd.Series, new: pd.Series, bins: int=10, is_categorical: bool = Fals
     return _si_df(old, new, bins, is_categorical=is_categorical)["si"].sum()
 
 
-def _si_df(old: pd.Series, new: pd.Series, bins: int=10, is_categorical: bool = False) -> pd.DataFrame:
+def _si_df(old: Sequence, new: Sequence, bins: int=10, is_categorical: bool = False) -> pd.DataFrame:
     """
     Calculate a stability index between two series. Input target scores for a
     Population Stability Index (PSI), or continuous feature samples for a Characteristic
@@ -41,9 +41,9 @@ def _si_df(old: pd.Series, new: pd.Series, bins: int=10, is_categorical: bool = 
 
     Parameters:
     -----------
-    old: pd.Series
+    old: Sequence
         A dataframe that a model was trained on
-    new: pd.Series
+    new: Sequence
         A dataframe that has been seen recently
     groups: int
         The number of quantiles to use. This is ignored when `is_categorical` is true.
@@ -68,13 +68,13 @@ def _si_df(old: pd.Series, new: pd.Series, bins: int=10, is_categorical: bool = 
     return df
 
 
-def _counts_by_quantile(old: pd.Series, new: pd.Series, bins: int = 10) -> pd.DataFrame:
+def _counts_by_quantile(old: Sequence, new: Sequence, bins: int = 10) -> pd.DataFrame:
     """
     Parameters:
     -----------
-    old: pd.Series
+    old: Sequence
         A dataframe that a model was trained on
-    new: pd.Series
+    new: Sequence
         A dataframe that has been seen recently
     bins: int
         The number of quantiles to calculate
@@ -84,8 +84,13 @@ def _counts_by_quantile(old: pd.Series, new: pd.Series, bins: int = 10) -> pd.Da
     pd.DataFrame
         A dataframe with 3 columns: "bin", "old", and "new"
     """
-    df = pd.DataFrame(old, columns=["old"])
-    df["quant"] = pd.qcut(old, bins)
+    if isinstance(old, pd.Series) and old.name is not None:
+        # Fixes a weird behavior where if a series is named, but a dataframe is created
+        # with a new name, then the series isn't added.
+        df = pd.DataFrame(old).rename(columns={old.name: "old"})
+    else:
+        df = pd.DataFrame(old, columns=["old"])
+    df["quant"] = pd.qcut(old, bins, duplicates="drop")
     df = df.groupby("quant").count().reset_index()
     new_dist = pd.DataFrame(mtp.map_to_series(pd.Series(new), df["quant"].cat.categories), columns=["quant"])
     new_dist["new"] = 0
@@ -93,13 +98,13 @@ def _counts_by_quantile(old: pd.Series, new: pd.Series, bins: int = 10) -> pd.Da
     return df
 
 
-def _counts_by_category(old: pd.Series, new: pd.Series) -> pd.DataFrame:
+def _counts_by_category(old: Sequence, new: Sequence) -> pd.DataFrame:
     """
     Parameters:
     -----------
-    old: pd.Series
+    old: Sequence
         A dataframe that a model was trained on
-    new: pd.Series
+    new: Sequence
         A dataframe that has been seen recently
 
     Returns
@@ -121,8 +126,8 @@ def _counts_by_category(old: pd.Series, new: pd.Series) -> pd.DataFrame:
 
 
 def si_is_signifcant(
-    old: pd.Series,
-    new: pd.Series,
+    old: Sequence,
+    new: Sequence,
     bins: int = 10,
     is_categorical: bool = False,
     method: Literal["chisq", "norm", "industry"] = "norm",
