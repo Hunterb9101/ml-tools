@@ -68,7 +68,7 @@ def _si_df(old: Sequence, new: Sequence, bins: int=10, is_categorical: bool = Fa
     return df
 
 
-def _counts_by_quantile(old: Sequence, new: Sequence, bins: int = 10) -> pd.DataFrame:
+def _counts_by_quantile(old: Sequence, new: Sequence, bins: int = 10, clip_bounds: bool = True, tol=1e-3) -> pd.DataFrame:
     """
     Parameters:
     -----------
@@ -78,23 +78,29 @@ def _counts_by_quantile(old: Sequence, new: Sequence, bins: int = 10) -> pd.Data
         A dataframe that has been seen recently
     bins: int
         The number of quantiles to calculate
+    clip_bounds: bool
+        Manage how outliers are dealt with. When set to false, values greater than the max or less than the min in the
+        old sequence will not be included in the final count result. When set to true, values will be clipped into the
+        largest bucket.
 
     Returns
     -------
     pd.DataFrame
         A dataframe with 3 columns: "bin", "old", and "new"
     """
-    if isinstance(old, pd.Series) and old.name is not None:
-        # Fixes a weird behavior where if a series is named, but a dataframe is created
-        # with a new name, then the series isn't added.
-        df = pd.DataFrame(old).rename(columns={old.name: "old"})
-    else:
-        df = pd.DataFrame(old, columns=["old"])
+    old = np.array(old)
+    new = np.array(new)
+    df = pd.DataFrame(old, columns=["old"])
     df["quant"] = pd.qcut(old, bins, duplicates="drop")
     df = df.groupby("quant").count().reset_index()
+
+    if clip_bounds:
+        new = np.clip(new, a_min=old.min() + tol, a_max=old.max() - tol)
     new_dist = pd.DataFrame(mtp.map_to_series(pd.Series(new), df["quant"].cat.categories), columns=["quant"])
     new_dist["new"] = 0
     df["new"] = new_dist.groupby("quant").count().reset_index()["new"]
+    # New data might not exist in the old quantiles
+    df["new"].fillna(1, inplace=True)
     return df
 
 

@@ -33,14 +33,13 @@ def test_counts_by_quantile(n_type, m_type):
         m = m.tolist()
 
     df = mtds._counts_by_quantile(n, m)
-    assert df["old"].sum() > 995
-    assert df["new"].sum() > 995
+    assert df["old"].sum() == 1000
+    assert df["new"].sum() == 1000
 
 
 def test_si():
     n = np.random.uniform(0, 1, size=1000)
-    m = np.random.uniform(0, 1, size=1000)
-    assert mtds.si(new=n, old=m, bins=10) < 0.2
+    assert np.isclose(mtds.si(new=n, old=n, bins=10), 0.0, atol=0.001)
 
 
 @pytest.mark.parametrize("method", ['chisq', 'industry', 'norm'])
@@ -51,8 +50,6 @@ def test_si():
         (np.random.uniform(0, 1, size=1000), np.random.beta(3, 1, size=500), True),
         (np.random.uniform(0, 1, size=1000), np.random.uniform(-0.5, 1.5, size=500), True),
         (np.random.beta(0.5, 0.5, size=1000), np.random.normal(0, 1, size=500), True),
-        (np.random.normal(0, 1.1, size=1000), np.random.normal(0, 1, size=500), False),
-        (np.random.normal(0.05, 1, size=1000), np.random.normal(0, 1, size=500), False),
     ]
 )
 def test_si_significance(old, new, expected, method, quantile):
