@@ -101,6 +101,8 @@ def _counts_by_quantile(old: Sequence, new: Sequence, bins: int = 10, clip_bound
     df["new"] = new_dist.groupby("quant").count().reset_index()["new"]
     # New data might not exist in the old quantiles
     df["new"].fillna(1, inplace=True)
+    # Make sure there are no infinities in resulting stability index
+    df.loc[df["old"] == 0, "old"] = 1
     return df
 
 
