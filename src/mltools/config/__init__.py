@@ -49,10 +49,24 @@ class PathConfig(pdt.BaseModel):
             test=join(self.processed_data_dir, "test.parquet")
         )
 
+    @pdt.computed_field
+    @property
+    def artifact_dir(self) -> str:
+        """
+        Model-agnostic artifacts should be saved here, such as processing data
+        pipelines.
+        """
+        return join(self.data_path, "artifacts")
+
 
 class ModelPathConfig(pdt.BaseModel):
     root_path: str = "/tmp"
     model: str
+
+    @pdt.computed_field
+    @property
+    def data_path(self) -> str:
+        return join(self.root_path, "data")
 
     @pdt.computed_field
     @property
@@ -68,10 +82,19 @@ class ModelPathConfig(pdt.BaseModel):
     @property
     def dmatrix_path(self) -> mt.TrainValTest[str]:
         return mt.TrainValTest(
-            train=join(self.dmatrix_path, "train.parquet"),
-            val=join(self.dmatrix_path, "val.parquet"),
-            test=join(self.dmatrix_path, "test.parquet")
+            train=join(self.dmatrix_dir, f"train-{self.model}.parquet"),
+            val=join(self.dmatrix_dir, f"val-{self.model}.parquet"),
+            test=join(self.dmatrix_dir, f"test-{self.model}.parquet")
         )
+
+    @pdt.computed_field
+    @property
+    def feature_pipeline_path(self) -> str:
+        """
+        The feature selection and agumentation pipeline, a fit/transform class,
+        should be saved as a pickle file here.
+        """
+        return join(self.model_dir, f"fp-{self.model}.pkl")
 
     @pdt.computed_field
     @property
@@ -85,15 +108,6 @@ class ModelPathConfig(pdt.BaseModel):
         The model artifact should be saved here.
         """
         return join(self.model_dir, f"{self.model}.pkl")
-
-    @pdt.computed_field
-    @property
-    def artifact_dir(self) -> str:
-        """
-        Model artifacts that arent the final model should be saved here.
-        This can include things like feature importances, SHAP values, etc.
-        """
-        return join(self.model_dir, "artifacts")
 
 
 class ModelConfig(pdt.BaseModel):
