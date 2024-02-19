@@ -99,15 +99,17 @@ def _counts_by_quantile(
     new_arr = np.array(new)
     df = pd.DataFrame(old_arr, columns=["old"])
     df["quant"] = pd.qcut(old_arr, bins, duplicates="drop")
-    df = df.groupby("quant").count().reset_index()
+    df = df.groupby("quant", observed=False).count().reset_index()
 
     if clip_bounds:
         new_arr = np.clip(new_arr, a_min=old_arr.min() + tol, a_max=old_arr.max() - tol)
-    new_dist = pd.DataFrame(mtp.map_to_series(pd.Series(new_arr), df["quant"].cat.categories), columns=["quant"])
+
+    int_range = mtp.map_to_series(pd.Series(new_arr), df["quant"].cat.categories)
+    new_dist = pd.DataFrame(int_range, columns=["quant"], dtype="category")
     new_dist["new"] = 0
-    df["new"] = new_dist.groupby("quant").count().reset_index()["new"]
+    df["new"] = new_dist.groupby("quant", observed=False).count().reset_index()["new"]
     # New data might not exist in the old quantiles
-    df["new"].fillna(1, inplace=True)
+    df["new"] = df["new"].fillna(1)
     return df
 
 
