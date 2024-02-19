@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 import pandas as pd
 import numpy as np
@@ -21,7 +21,7 @@ class Discretizer:
             `max_unique_vals` unique values
         """
         self.cols = cols
-        self.bucket_cols = None
+        self.bucket_cols: Optional[List[str]] = None
         self.bucket_map: Dict[str, np.ndarray] = {}
         self.max_unique_vals = max_unique_vals
         self.feature_name: str = "q_{x}"
@@ -49,6 +49,8 @@ class Discretizer:
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
         df = df.copy()
+        if self.bucket_cols is None:
+            raise RuntimeError("Must fit before transforming")
         for c in self.bucket_cols:
             df[self.feature_name.format(x=c)] = self.transform_column(df[c])
         return df

@@ -69,7 +69,13 @@ def _si_df(old: Sequence, new: Sequence, bins: int=10, is_categorical: bool = Fa
     return df
 
 
-def _counts_by_quantile(old: Sequence, new: Sequence, bins: int = 10, clip_bounds: bool = True, tol=1e-3) -> pd.DataFrame:
+def _counts_by_quantile(
+    old: Sequence,
+    new: Sequence,
+    bins: int = 10,
+    clip_bounds: bool = True,
+    tol=1e-3
+) -> pd.DataFrame:
     """
     Parameters:
     -----------
@@ -89,15 +95,15 @@ def _counts_by_quantile(old: Sequence, new: Sequence, bins: int = 10, clip_bound
     pd.DataFrame
         A dataframe with 3 columns: "bin", "old", and "new"
     """
-    old = np.array(old)
-    new = np.array(new)
-    df = pd.DataFrame(old, columns=["old"])
-    df["quant"] = pd.qcut(old, bins, duplicates="drop")
+    old_arr = np.array(old)
+    new_arr = np.array(new)
+    df = pd.DataFrame(old_arr, columns=["old"])
+    df["quant"] = pd.qcut(old_arr, bins, duplicates="drop")
     df = df.groupby("quant").count().reset_index()
 
     if clip_bounds:
-        new = np.clip(new, a_min=old.min() + tol, a_max=old.max() - tol)
-    new_dist = pd.DataFrame(mtp.map_to_series(pd.Series(new), df["quant"].cat.categories), columns=["quant"])
+        new_arr = np.clip(new_arr, a_min=old_arr.min() + tol, a_max=old_arr.max() - tol)
+    new_dist = pd.DataFrame(mtp.map_to_series(pd.Series(new_arr), df["quant"].cat.categories), columns=["quant"])
     new_dist["new"] = 0
     df["new"] = new_dist.groupby("quant").count().reset_index()["new"]
     # New data might not exist in the old quantiles
@@ -105,7 +111,7 @@ def _counts_by_quantile(old: Sequence, new: Sequence, bins: int = 10, clip_bound
     return df
 
 
-def _counts_by_category(old: Sequence, new: Sequence) -> pd.DataFrame:
+def _counts_by_category(old: pd.Series, new: pd.Series) -> pd.DataFrame:
     """
     Parameters:
     -----------
@@ -143,12 +149,11 @@ def si_is_signifcant(
     observed = si(old=old, new=new, bins=bins, is_categorical=is_categorical)
     if method == "chisq":
         return observed > critical_value_chi2(len_old=len(old), len_new=len(new), n_bins=bins, quantile=quantile)
-    elif method == "norm":
+    if method == "norm":
         return observed > critical_value_norm(len_old=len(old), len_new=len(new), n_bins=bins, quantile=quantile)
-    elif method == "industry":
+    if method == "industry":
         return observed > 0.2
-    else:
-        raise ValueError(f"Unexpected method: {method}")
+    raise ValueError(f"Unexpected method: {method}")
 
 
 

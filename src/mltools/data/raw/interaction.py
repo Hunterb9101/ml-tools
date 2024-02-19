@@ -2,7 +2,6 @@ from typing import List, Dict
 import logging
 
 import pandas as pd
-import numpy as np
 
 from mltools.data.raw.discretizer import Discretizer
 
@@ -48,7 +47,7 @@ class Interaction:
             try:
                 self.means[x][y] = df.groupby(col)[x].mean().to_dict()
             except TypeError:
-                logger.debug("Unable to create {x}|{y} interaction feature".format(x=x, y=y))
+                logger.debug("Unable to create %s|%s interaction feature", x, y)
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
         old_cols = len(df.columns)
@@ -68,5 +67,5 @@ class Interaction:
         aug =  pd.concat(series, axis=1)
         aug.columns = colnames
         df = pd.concat([df, aug], axis=1)
-        logger.debug("Added {n} interaction features".format(n=len(df.columns) - old_cols))
+        logger.debug("Added %s interaction features", len(df.columns) - old_cols)
         return df.drop(columns=rm_cols)

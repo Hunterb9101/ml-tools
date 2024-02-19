@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 import pandas as pd
 import pytest
 
@@ -6,12 +7,22 @@ import mltools.data.features as kpf
 @pytest.fixture
 def ex_fsp() -> kpf.FeatureSelectionPipeline:
     class A(kpf.BasePruner):
-        def fit(self, df):
+        def __init__(self):
+            super().__init__()
+            self._drop_cols = []
+            self._is_fit = False
+
+        def fit(self, df): # pylint: disable=unused-argument
             self._drop_cols = ['a']
             self._is_fit = True
 
     class B(kpf.BasePruner):
-        def fit(self, df):
+        def __init__(self):
+            super().__init__()
+            self._drop_cols = []
+            self._is_fit = False
+
+        def fit(self, df): # pylint: disable=unused-argument
             self._drop_cols = ['b']
             self._is_fit = True
 
@@ -21,7 +32,7 @@ def ex_fsp() -> kpf.FeatureSelectionPipeline:
 
 def test_feature_selection_pipeline():
     """ Make sure it initializes"""
-    fsp = kpf.FeatureSelectionPipeline([])
+    kpf.FeatureSelectionPipeline([])
 
 
 def test_feature_selection_pipeline_fit(ex_fsp):

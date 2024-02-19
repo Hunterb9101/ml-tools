@@ -1,4 +1,4 @@
-from typing import Callable, Tuple
+from typing import List, Optional, Tuple
 import logging
 
 import pandas as pd
@@ -17,7 +17,7 @@ class ModelImputer(BaseTransformer):
         self.model = model
         self.target_col = target_col
         self.missing_value = missing_value
-        self.fit_cols = None
+        self.fit_cols: Optional[List[str]] = None
 
     def fit(self, df: pd.DataFrame):
         self.fit_cols = [x for x in df.columns if x != self.target_col]
@@ -28,6 +28,8 @@ class ModelImputer(BaseTransformer):
         logger.debug("MAE: %s", sm.mean_absolute_error(test[self.target_col], self.model.predict(test[self.fit_cols])))
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        if self.fit_cols is None:
+            raise RuntimeError("Must fit before transforming")
         for c in self.fit_cols:
             if c not in df.columns:
                 raise ValueError(f"{c} not in df.columns")

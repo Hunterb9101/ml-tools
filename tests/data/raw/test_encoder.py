@@ -1,10 +1,10 @@
 import pandas as pd
 
-from mltools.data.raw.encoder import *
+import mltools.data.raw.encoder as mdre
 
 def test_target_encoder():
     df = pd.DataFrame({"a": [1, 1, 1, 2, 2, 2], "b": ["a", "b", "c", "a", "b", "c"], "y": [1, 1, 1, 0, 0, 0]})
-    te = TargetEncoder(["a", "b"], "y")
+    te = mdre.TargetEncoder(["a", "b"], "y")
     te.fit(df)
 
     out = te.transform(df)
@@ -20,7 +20,7 @@ def test_target_encoder_extraneous_cols():
     """
     b = [1, 2, 3, 1, 2, 3]
     df = pd.DataFrame({"a": [1, 1, 1, 2, 2, 2], "b": b, "y": [1, 1, 1, 0, 0, 0]})
-    te = TargetEncoder(["a"], "y")
+    te = mdre.TargetEncoder(["a"], "y")
     te.fit(df)
 
     out = te.transform(df)
@@ -30,7 +30,7 @@ def test_target_encoder_extraneous_cols():
 
 def test_fit_transform_target_encoder():
     df = pd.DataFrame({"a": [1, 1, 1, 2, 2, 2], "b": [1, 2, 3, 1, 2, 3], "y": [1, 1, 1, 0, 0, 0]})
-    te = TargetEncoder(["a", "b"], "y")
+    te = mdre.TargetEncoder(["a", "b"], "y")
     out = te.fit_transform(df)
 
     assert all(df.columns == out.columns)

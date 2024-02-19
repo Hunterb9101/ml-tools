@@ -10,7 +10,7 @@ class MockColumn():
         self,
         name: str,
         distribution: Optional[Callable] = None,
-        distribution_kwargs: Dict[str, Any] = None,
+        distribution_kwargs: Optional[Dict[str, Any]] = None,
         redundant_of: Optional[str] = None,
         is_useful: bool = True
     ):
@@ -94,6 +94,8 @@ class MockManagerClassification:
         for i, idx in enumerate(self.idx_cols):
             data[idx] = np.arange(self.n_rows) * (i + 1)
         for c in self._useful + self._useless:
+            if not c.distribution:
+                raise ValueError("Didn't have a distribution for X")
             data[c.name] = c.distribution(size=self.n_rows, **c.distribution_kwargs)
         for r in self._redundant:
             data[r.name] = data[r.redundant_of]
@@ -124,7 +126,7 @@ def linearly_separable_data(
     useful_pfx: str = "useful",
     useless_pfx: str = "useless",
     redundant_pfx: str = "redundant",
-    idx_cols: List[str] = None,
+    idx_cols: Optional[List[str]] = None,
     target_col: str = "y"
 ):
     columns: List[Union[MockColumn, DupColumn]] = []

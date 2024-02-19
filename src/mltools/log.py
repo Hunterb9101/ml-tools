@@ -13,9 +13,9 @@ class Timer:
         self.logger = logger
         self.level = level
 
-        self.start: Optional[int] = None
-        self.elapsed: Optional[int] = None
-        self.end: Optional[int] = None
+        self.start: Optional[float] = None
+        self.elapsed: float = 0
+        self.end: Optional[float] = None
 
     def __call__(self, message: str):
         elapsed = time() - self.elapsed

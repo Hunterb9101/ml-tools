@@ -9,11 +9,11 @@ def mad(x: pd.DataFrame, normalize: bool = False):
     x_arr = np.array(x)
     median = np.quantile(x_arr, 0.5, axis=0)
     absolute_deviations = np.abs(x_arr - median)
-    mad = np.quantile(absolute_deviations, 0.5, axis=0)
+    mad_val = np.quantile(absolute_deviations, 0.5, axis=0)
     if normalize:
         # A normalizing constant
-        mad = mad / 0.67476
-    return mad
+        mad_val = mad_val / 0.67476
+    return mad_val
 
 class MADMedianOutlierDetector():
     def __init__(self, q: float = 0.975):

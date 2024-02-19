@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 import pytest
 import pandas as pd
 import numpy as np
@@ -6,7 +7,7 @@ import mltools.data.raw.interaction as interaction
 
 
 @pytest.fixture
-def df():
+def inter_df():
     a = np.array([int(x) for x in list("7"*20 + "8"*20 + "9"*20)]).reshape(60, 1)
     b = np.array([int(x) for x in list("8"*30 + "9"*30)]).reshape(60, 1)
 
@@ -14,19 +15,19 @@ def df():
     return df
 
 @pytest.fixture
-def df2(df):
+def inter_df2(inter_df):
     c = np.array([int(x) for x in list("4"*15 + "5"*15 + "6"*15 + "7"*15)]).reshape(60, 1)
-    df['c'] = c
-    return df
+    inter_df['c'] = c
+    return inter_df
 
-def test_interaction_fit(df):
+def test_interaction_fit(inter_df):
     i = interaction.Interaction(["a", "b"], max_unique_vals=2)
-    i.fit(df)
+    i.fit(inter_df)
 
     assert len(i.means) == 2
 
 
-def test_interaction_transform_column(df2):
+def test_interaction_transform_column(inter_df2):
     """
     Assert that the mapping is working correctly for an interaction column.
     
@@ -41,9 +42,9 @@ def test_interaction_transform_column(df2):
     # E[a|b=8] = 20*7 + 10*8 = 220 / 30 = 7.333
     # E[a|b=9] = 10*8 + 20*9 = 260 / 30 = 8.666
     i = interaction.Interaction(["a", "b", "c"], max_unique_vals=2)
-    i.fit(df2)
+    i.fit(inter_df2)
 
-    out = i.transform(df2)
+    out = i.transform(inter_df2)
     assert out['a_b'].isna().sum() == 0
     assert np.all(np.isclose(out[out['b'] == 8]['a_b'], 7.333, atol=0.01))
     assert np.all(np.isclose(out[out['b'] == 9]['a_b'], 8.666, atol=0.01))
