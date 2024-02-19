@@ -23,3 +23,7 @@ repo:
 	echo "# $(PROJ_NAME)" > README.md
 	git add .
 	git commit -m "feat: Add templated project structure"
+
+release:
+	python -m build
+	python -m twine upload --skip-existing --repository pypi dist/*

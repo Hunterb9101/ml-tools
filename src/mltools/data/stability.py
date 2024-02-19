@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats as ss
 
-import ml_tools.pandas as mtp
+import mltools.pandas as mtp
 
 
 def si(old: Sequence, new: Sequence, bins: int=10, is_categorical: bool = False) -> float:

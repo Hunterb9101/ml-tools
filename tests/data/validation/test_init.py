@@ -3,8 +3,8 @@ import pytest
 import pandas as pd
 import numpy as np
 
-import ml_tools.data.validation as mtv
-import ml_tools.data.validation.schema as mts
+import mltools.data.validation as mtv
+import mltools.data.validation.schema as mts
 
 @pytest.fixture
 def schema_obj_1():

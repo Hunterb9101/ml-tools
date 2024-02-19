@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import ml_tools.data.stability as mtds
+import mltools.data.stability as mtds
 
 
 def test_counts_by_category():

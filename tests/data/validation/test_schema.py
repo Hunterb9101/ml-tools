@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import pandas as pd
 
-import ml_tools.data.validation.schema as mts
+import mltools.data.validation.schema as mts
 
 
 @pytest.mark.parametrize("minval, maxval, include_lb, include_ub",
