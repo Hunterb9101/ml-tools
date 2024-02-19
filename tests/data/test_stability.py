@@ -14,6 +14,8 @@ def test_counts_by_category():
         {"bin": 1, "old": 5, "new": 5},
         {"bin": 2, "old": 0, "new": 5}
     ])
+
+    print(df)
     assert df.equals(expected)
 
 @pytest.mark.parametrize("n_type", ["series", "list", None])

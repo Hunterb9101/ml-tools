@@ -119,8 +119,8 @@ def _counts_by_category(old: Sequence, new: Sequence) -> pd.DataFrame:
     pd.DataFrame
         A dataframe with 3 columns: "bin", "old", and "new"
     """
-    old_counts = pd.DataFrame(old.value_counts(dropna=False), columns=["old"])
-    new_counts = pd.DataFrame(new.value_counts(dropna=False), columns=["new"])
+    old_counts = pd.DataFrame(old.value_counts(dropna=False)).rename(columns={"count": "old"})
+    new_counts = pd.DataFrame(new.value_counts(dropna=False)).rename(columns={"count": "new"})
     categories = list(set(old_counts.index.tolist() + new_counts.index.tolist()))
     df = pd.DataFrame(categories, columns=["bin"])
     df = df.merge(old_counts, how="left", left_on="bin", right_on=old_counts.index)
