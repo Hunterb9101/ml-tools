@@ -1,8 +1,9 @@
+# pylint: disable=protected-access
 import numpy as np
 import pandas as pd
 import pytest
 
-import ml_tools.data.stability as mtds
+import mltools.data.stability as mtds
 
 
 def test_counts_by_category():
@@ -14,6 +15,8 @@ def test_counts_by_category():
         {"bin": 1, "old": 5, "new": 5},
         {"bin": 2, "old": 0, "new": 5}
     ])
+
+    print(df)
     assert df.equals(expected)
 
 @pytest.mark.parametrize("n_type", ["series", "list", None])

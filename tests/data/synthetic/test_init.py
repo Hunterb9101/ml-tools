@@ -1,10 +1,9 @@
 # pylint: disable=W0621,W0212
 
 import pytest
-import pandas as pd
 import numpy as np
 
-import ml_tools.data.synthetic as core
+import mltools.data.synthetic as core
 
 @pytest.fixture
 def schema_1():

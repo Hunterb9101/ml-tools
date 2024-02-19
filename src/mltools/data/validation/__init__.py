@@ -3,7 +3,7 @@ from typing import List
 import pandas as pd
 import numpy as np
 
-import ml_tools.data.validation.schema as mts
+import mltools.data.validation.schema as mts
 
 
 _FLOAT_DTYPES = [f"float{x}" for x in [8, 16, 32, 64]]

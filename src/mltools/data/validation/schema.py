@@ -8,8 +8,8 @@ NumericType = Union[float, int]
 class SchemaRange:
     def __init__(
         self,
-        minval: NumericType = None,
-        maxval: NumericType = None,
+        minval: Optional[NumericType] = None,
+        maxval: Optional[NumericType] = None,
         include_lb: bool = True,
         include_ub: bool = True
     ):
@@ -95,7 +95,7 @@ class SchemaObj:
         self.valid_vals = valid_vals if valid_vals else []
         self.nullable = nullable
 
-    def to_dict(self) -> List[Dict[str, Any]]:
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "column": self.column,
             "dtype": self.dtype,

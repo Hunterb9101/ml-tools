@@ -10,15 +10,17 @@ where = ["src"]
 namespaces = false
 
 [project]
-name = "ml_tools"
+name = "hb-mltools"
 dynamic = ["version", "optional-dependencies"]
 keywords = []
-description = "A machine learning template"
+description = "A platform for rapid development of Machine Learning algorithms."
 requires-python = ">=3.8"
 readme = "README.md"
 dependencies = [
+    "lightgbm",
     "pandas",
     "numpy",
+    "scikit-learn",
     "scipy"
 ]
 license = {text = "open source"}
@@ -27,9 +29,9 @@ license = {text = "open source"}
 homepage = "https://github.com/Hunterb9101/ml-tools"
 
 [tool.setuptools.dynamic]
-version = {attr = "ml_tools.__version__"}
+version = {attr = "mltools.__version__"}
 optional-dependencies.tests = {file = ["reqs/test.txt"]}
 
 [tool.isort]
 sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
-known_first_party = "ml_tools"
+known_first_party = "mltools"

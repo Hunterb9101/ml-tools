@@ -4,7 +4,7 @@ from datetime import datetime as dt
 import pytest
 import numpy as np
 
-import ml_tools.data.synthetic.random as random
+import mltools.data.synthetic.random as random
 
 
 @pytest.mark.parametrize("length", [(3), (6), (12)])
