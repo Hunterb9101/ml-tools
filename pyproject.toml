@@ -19,6 +19,7 @@ readme = "README.md"
 dependencies = [
     "lightgbm",
     "pandas",
+    "pydantic",
     "numpy",
     "scikit-learn",
     "scipy"
