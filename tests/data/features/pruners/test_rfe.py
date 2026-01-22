@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 import lightgbm as lgb
 
-from mltools.data.features.rfe import RFEPruner
+from mltools.data.features.pruners.rfe import RFEPruner
 
 @pytest.fixture
 def data() -> pd.DataFrame:
