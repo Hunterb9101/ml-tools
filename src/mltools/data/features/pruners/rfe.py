@@ -3,7 +3,7 @@ from typing import Any, Optional, Dict
 import pandas as pd
 from sklearn.feature_selection import RFE
 
-from mltools.data.features import BasePruner
+from mltools.data.features.pruners import BasePruner
 
 
 class RFEPruner(BasePruner):

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 
-from mltools.data.features.moment import MomentPruner
+from mltools.data.features.pruners.moment import MomentPruner
 
 
 def test_moment_fit():

@@ -1,6 +1,6 @@
 import pandas as pd
 
-from mltools.data.features import BasePruner
+from mltools.data.features.pruners import BasePruner
 
 class MomentPruner(BasePruner):
     """

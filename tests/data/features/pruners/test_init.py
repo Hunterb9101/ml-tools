@@ -2,7 +2,7 @@
 import pandas as pd
 import pytest
 
-import mltools.data.features as kpf
+import mltools.data.features.pruners as kpf
 
 @pytest.fixture
 def ex_fsp() -> kpf.FeatureSelectionPipeline:
