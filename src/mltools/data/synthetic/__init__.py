@@ -1,18 +1,19 @@
-from typing import Dict, List, Any, Optional, Callable, Union
 import warnings
+from collections.abc import Callable
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
 
 
-class MockColumn():
+class MockColumn:
     def __init__(
         self,
         name: str,
-        distribution: Optional[Callable] = None,
-        distribution_kwargs: Optional[Dict[str, Any]] = None,
-        redundant_of: Optional[str] = None,
-        is_useful: bool = True
+        distribution: Callable | None = None,
+        distribution_kwargs: dict[str, Any] | None = None,
+        redundant_of: str | None = None,
+        is_useful: bool = True,
     ):
         self.name = name
         self.distribution = distribution
@@ -21,14 +22,17 @@ class MockColumn():
         self.is_useful = is_useful
 
         if distribution and redundant_of:
-            raise ValueError(f"Cannot set distribution for redundant column {name}.")
+            msg = f"Cannot set distribution for redundant column {name}."
+            raise ValueError(msg)
         if distribution_kwargs and redundant_of:
-            raise ValueError(f"Cannot set distribution_kwargs for redundant column {name}.")
+            msg = f"Cannot set distribution_kwargs for redundant column {name}."
+            raise ValueError(msg)
         if is_useful and redundant_of:
             warnings.warn("is_useful=True for a redundant column. Ignoring.")
             self.is_useful= False
         if not redundant_of and not distribution:
-            raise ValueError("Must define a distribution for a non-redundant column")
+            msg = "Must define a distribution for a non-redundant column"
+            raise ValueError(msg)
 
 
 class DupColumn(MockColumn):
@@ -38,7 +42,7 @@ class DupColumn(MockColumn):
             distribution=None,
             distribution_kwargs=None,
             redundant_of=redundant_of,
-            is_useful=False
+            is_useful=False,
         )
 
 
@@ -50,11 +54,11 @@ class MockManagerClassification:
         return self._columns
 
     @columns.setter
-    def columns(self, value: List[str]):
+    def columns(self, value: list[str]):
         self._columns = value
 
-        self._useful: List[Union[MockColumn, DupColumn]] = []
-        self._useless: List[Union[MockColumn, DupColumn]] = []
+        self._useful: list[MockColumn | DupColumn] = []
+        self._useless: list[MockColumn | DupColumn] = []
         self._redundant = []
 
         for c in self.columns:
@@ -68,11 +72,11 @@ class MockManagerClassification:
     def __init__(
         self,
         n_rows: int,
-        columns: List[Union[MockColumn, DupColumn]],
-        idx_cols: Optional[List[str]] = None,
-        target_col: Optional[str] = "y",
+        columns: list[MockColumn | DupColumn],
+        idx_cols: list[str] | None = None,
+        target_col: str | None = "y",
         class_balance: float = 0.5,
-        seed: int = 0
+        seed: int = 0,
     ):
         self.n_rows = n_rows
 
@@ -95,7 +99,8 @@ class MockManagerClassification:
             data[idx] = np.arange(self.n_rows) * (i + 1)
         for c in self._useful + self._useless:
             if not c.distribution:
-                raise ValueError("Didn't have a distribution for X")
+                msg = "Didn't have a distribution for X"
+                raise ValueError(msg)
             data[c.name] = c.distribution(size=self.n_rows, **c.distribution_kwargs)
         for r in self._redundant:
             data[r.name] = data[r.redundant_of]
@@ -126,10 +131,10 @@ def linearly_separable_data(
     useful_pfx: str = "useful",
     useless_pfx: str = "useless",
     redundant_pfx: str = "redundant",
-    idx_cols: Optional[List[str]] = None,
-    target_col: str = "y"
+    idx_cols: list[str] | None = None,
+    target_col: str = "y",
 ):
-    columns: List[Union[MockColumn, DupColumn]] = []
+    columns: list[MockColumn | DupColumn] = []
     idx_cols = idx_cols or []
     if add_redundant:
         for i in range(n_useful_cols):

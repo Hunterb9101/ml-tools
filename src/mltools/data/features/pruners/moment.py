@@ -2,10 +2,9 @@ import pandas as pd
 
 from mltools.data.features.pruners import BasePruner
 
+
 class MomentPruner(BasePruner):
-    """
-    Remove features with low variance or high correlation
-    """
+    """Remove features with low variance or high correlation."""
 
     def __init__(self, target_col: str, min_variance: float = 0.01, max_corr: float = 0.95):
         super().__init__()
@@ -16,9 +15,7 @@ class MomentPruner(BasePruner):
         self.target_col = target_col
 
     def fit(self, df: pd.DataFrame) -> None:
-        """
-        Fit the feature selector to the data. This should be done on the training data only.
-        """
+        """Fit the feature selector to the data. This should be done on the training data only."""
         df = df.drop(self.target_col, axis=1)
         drop_cols = []
         for col in df.columns:

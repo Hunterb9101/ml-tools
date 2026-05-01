@@ -1,4 +1,4 @@
-from typing import Any, Optional, Dict
+from typing import Any, Dict, Optional
 
 import pandas as pd
 from sklearn.feature_selection import RFE
@@ -12,15 +12,13 @@ class RFEPruner(BasePruner):
         self.model = model
         self.n_features_to_select = n_features_to_select
         self.target_col = target_col
-        self.ranking_: Optional[Dict[str, int]] = None
-        self.selector: Optional[RFE] = None
+        self.ranking_: dict[str, int] | None = None
+        self.selector: RFE | None = None
         self._drop_cols = []
         self._is_fit = False
 
     def fit(self, df: pd.DataFrame) -> None:
-        """
-        Fit the feature selector to the data. This should be done on the training data only.
-        """
+        """Fit the feature selector to the data. This should be done on the training data only."""
         assert self.target_col in df.columns, f"Target column {self.target_col} not in df columns"
         self.selector = RFE(self.model, n_features_to_select=1)
         self.selector.fit(df.drop(columns=self.target_col), df[self.target_col])

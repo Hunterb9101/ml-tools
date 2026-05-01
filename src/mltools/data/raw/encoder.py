@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict
+from typing import Dict, List
 
 import pandas as pd
 
+
 class UnivariateEncoder(ABC):
-    def __init__(self, columns: List[str], target_col: str):
+    def __init__(self, columns: list[str], target_col: str):
         self.is_fit = False
         self.columns = columns
         self.target_col = target_col
@@ -33,9 +34,9 @@ class UnivariateEncoder(ABC):
 
 
 class TargetEncoder(UnivariateEncoder):
-    def __init__(self, columns: List[str], target_col: str):
+    def __init__(self, columns: list[str], target_col: str):
         super().__init__(columns, target_col=target_col)
-        self.mapping: Dict[str, Dict[str, float]] = {}
+        self.mapping: dict[str, dict[str, float]] = {}
 
     def fit_column(self, col: pd.Series, target: pd.Series) -> None:
         df = pd.DataFrame({"col": col, "target": target})

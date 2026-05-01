@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict
+from typing import Dict, List
 
 import pandas as pd
 
@@ -11,6 +11,7 @@ class BasePruner(BaseTransformer, ABC):
     An abstract class for feature selection. The object contains information on
     the columns to drop.
     """
+
     def __init__(self):
         self._drop_cols = []
         self._is_fit = False
@@ -18,7 +19,8 @@ class BasePruner(BaseTransformer, ABC):
     @property
     def drop_cols(self):
         if not self._is_fit:
-            raise RuntimeError("Must fit before accessing drop_cols")
+            msg = "Must fit before accessing drop_cols"
+            raise RuntimeError(msg)
         return self._drop_cols
 
     @abstractmethod
@@ -33,13 +35,12 @@ class BasePruner(BaseTransformer, ABC):
 
 
 class FeatureSelectionPipeline(BasePruner):
-    """
-    A class for managing multiple feature selection pruners.
-    """
-    def __init__(self, pruners: List[BasePruner]):
+    """A class for managing multiple feature selection pruners."""
+
+    def __init__(self, pruners: list[BasePruner]):
         super().__init__()
         self.pruners = pruners
-        self.waterfall_: Dict[str, int] = {}
+        self.waterfall_: dict[str, int] = {}
 
     def fit(self, df: pd.DataFrame) -> None:
         dfc = df.copy()

@@ -19,7 +19,7 @@ readme = "README.md"
 dependencies = [
     "lightgbm",
     "pandas",
-    "pyarrow",
+    "pyarrow==17.0.0",
     "pydantic",
     "numpy",
     "scikit-learn",

@@ -1,5 +1,5 @@
-from typing import List, Optional, Tuple
 import logging
+from typing import List, Optional, Tuple
 
 import pandas as pd
 import sklearn.metrics as sm
@@ -12,12 +12,12 @@ class ModelImputer(BaseTransformer):
     def __init__(self,
         model,
         target_col: str,
-        missing_value: float
+        missing_value: float,
     ):
         self.model = model
         self.target_col = target_col
         self.missing_value = missing_value
-        self.fit_cols: Optional[List[str]] = None
+        self.fit_cols: list[str] | None = None
 
     def fit(self, df: pd.DataFrame):
         self.fit_cols = [x for x in df.columns if x != self.target_col]
@@ -29,10 +29,12 @@ class ModelImputer(BaseTransformer):
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
         if self.fit_cols is None:
-            raise RuntimeError("Must fit before transforming")
+            msg = "Must fit before transforming"
+            raise RuntimeError(msg)
         for c in self.fit_cols:
             if c not in df.columns:
-                raise ValueError(f"{c} not in df.columns")
+                msg = f"{c} not in df.columns"
+                raise ValueError(msg)
         train, test = self._get_train_test(df)
 
         mask = df[self.target_col] == self.missing_value
@@ -40,10 +42,10 @@ class ModelImputer(BaseTransformer):
         test.loc[mask, self.target_col] = self.model.predict(test.loc[mask, self.fit_cols])
         return pd.concat([train, test], axis=0).sort_index()
 
-    def _get_train_test(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    def _get_train_test(self, df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
         df = df.copy()
         df["_tmp"] = df[self.target_col] == self.missing_value
         train, test = df.loc[~df["_tmp"], :].copy(), df.loc[df["_tmp"], :].copy()
-        train.drop(columns=["_tmp"], inplace=True)
-        test.drop(columns=["_tmp"], inplace=True)
+        train = train.drop(columns=["_tmp"])
+        test = test.drop(columns=["_tmp"])
         return train, test

@@ -1,5 +1,5 @@
-from typing import List, Dict
 import logging
+from typing import Dict, List
 
 import pandas as pd
 
@@ -10,9 +10,10 @@ logger = logging.getLogger(__name__)
 class Interaction:
     """
     The Interaction class is used to augment a dataset with interaction features in the form
-    new_X = X - E[X|Y]
+    new_X = X - E[X|Y].
     """
-    def __init__(self, interaction_columns: List[str], max_unique_vals: int = 10):
+
+    def __init__(self, interaction_columns: list[str], max_unique_vals: int = 10):
         """
         Initialize the interaction augmentor.
 
@@ -26,14 +27,12 @@ class Interaction:
         """
         self.cols = interaction_columns
         self.max_unique_vals = max_unique_vals
-        self.means: Dict[str, Dict[str, float]] = {}
+        self.means: dict[str, dict[str, float]] = {}
         self.feature_name: str = "{x}_{y}"
         self.discretizer = Discretizer(self.cols, max_unique_vals=self.max_unique_vals)
 
     def fit(self, df: pd.DataFrame) -> None:
-        """
-        Fit the interaction augmentor to the data. This should be done on the training data only.
-        """
+        """Fit the interaction augmentor to the data. This should be done on the training data only."""
         df = df.copy()
         df = self.discretizer.fit_transform(df)
         # Compute a list of tuples of the product of all interaction columns

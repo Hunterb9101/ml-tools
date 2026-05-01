@@ -4,9 +4,10 @@ import pytest
 
 import mltools.data.features.moving as mdfm
 
+
 @pytest.fixture
 def data() -> pd.DataFrame:
-    return pd.DataFrame({'a': [1, 2, 3, 4, 5]})
+    return pd.DataFrame({"a": [1, 2, 3, 4, 5]})
 
 
 def test_moving_average(data):
@@ -16,7 +17,7 @@ def test_moving_average(data):
     exp = pd.DataFrame({
         "a": [1, 2, 3, 4, 5],
         "a_ma1": [1, 2, 3, 4, 5],
-        "a_ma2": [-1, 1.5, 2.5, 3.5, 4.5]
+        "a_ma2": [-1, 1.5, 2.5, 3.5, 4.5],
     })
 
     assert len(trans.columns) == 3 # 1 for the original column, 2 for the moving average

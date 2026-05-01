@@ -1,9 +1,9 @@
 # pylint: disable=redefined-outer-name
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
 
-import mltools.data.raw.interaction as interaction
+from mltools.data.raw import interaction
 
 
 @pytest.fixture
@@ -11,13 +11,12 @@ def inter_df():
     a = np.array([int(x) for x in list("7"*20 + "8"*20 + "9"*20)]).reshape(60, 1)
     b = np.array([int(x) for x in list("8"*30 + "9"*30)]).reshape(60, 1)
 
-    df = pd.DataFrame(np.hstack([a, b]), columns=["a", "b"])
-    return df
+    return pd.DataFrame(np.hstack([a, b]), columns=["a", "b"])
 
 @pytest.fixture
 def inter_df2(inter_df):
     c = np.array([int(x) for x in list("4"*15 + "5"*15 + "6"*15 + "7"*15)]).reshape(60, 1)
-    inter_df['c'] = c
+    inter_df["c"] = c
     return inter_df
 
 def test_interaction_fit(inter_df):
@@ -30,7 +29,7 @@ def test_interaction_fit(inter_df):
 def test_interaction_transform_column(inter_df2):
     """
     Assert that the mapping is working correctly for an interaction column.
-    
+
     The math is shown below for the expected means.
     """
     #     a b
@@ -45,6 +44,6 @@ def test_interaction_transform_column(inter_df2):
     i.fit(inter_df2)
 
     out = i.transform(inter_df2)
-    assert out['a_b'].isna().sum() == 0
-    assert np.all(np.isclose(out[out['b'] == 8]['a_b'], 7.333, atol=0.01))
-    assert np.all(np.isclose(out[out['b'] == 9]['a_b'], 8.666, atol=0.01))
+    assert out["a_b"].isna().sum() == 0
+    assert np.all(np.isclose(out[out["b"] == 8]["a_b"], 7.333, atol=0.01))
+    assert np.all(np.isclose(out[out["b"] == 9]["a_b"], 8.666, atol=0.01))

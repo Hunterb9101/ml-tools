@@ -1,10 +1,9 @@
 from typing import List
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 import mltools.data.validation.schema as mts
-
 
 _FLOAT_DTYPES = [f"float{x}" for x in [8, 16, 32, 64]]
 _INT_DTYPES = [f"int{x}" for x in [8, 16, 32, 64]]
@@ -14,7 +13,7 @@ def _validate_dtype(col: pd.Series, s: mts.SchemaObj) -> bool:
     if col.dtype != s.dtype and s.dtype not in _FLOAT_DTYPES:
         return False
     if col.dtype != s.dtype and s.dtype in _FLOAT_DTYPES and col.dtype not in _INT_DTYPES:
-        if col.dtype == 'object':
+        if col.dtype == "object":
             try:
                 col.astype("float64")
             except ValueError:
@@ -26,7 +25,7 @@ def _validate_dtype(col: pd.Series, s: mts.SchemaObj) -> bool:
 
 def _illegal_values_idx(col: pd.Series, s: mts.SchemaObj) -> pd.Series:
     """
-    Return the indices where invalid values exist
+    Return the indices where invalid values exist.
 
     Parameters
     ----------
@@ -40,7 +39,7 @@ def _illegal_values_idx(col: pd.Series, s: mts.SchemaObj) -> pd.Series:
     """
     sers = []
     if len(s.valid_vals) == 0:
-        return pd.Series([], dtype='float64')
+        return pd.Series([], dtype="float64")
     for chk in s.valid_vals:
         sers.append(pd.Series(chk.contains(col)))
     cond_df = pd.concat(sers, axis=1).sum(axis=1)
@@ -55,7 +54,7 @@ def _illegal_values(col: pd.Series, s: mts.SchemaObj) -> pd.Series:
     return illegal_vals
 
 
-def validate_data(data: pd.DataFrame, schema: List[mts.SchemaObj]) -> List[str]:
+def validate_data(data: pd.DataFrame, schema: list[mts.SchemaObj]) -> list[str]:
     """
     Validate that all columns are in their valid ranges.
 
@@ -84,9 +83,9 @@ def validate_data(data: pd.DataFrame, schema: List[mts.SchemaObj]) -> List[str]:
             continue
 
         illegal_vals = _illegal_values(data[col], s).tolist()
-        if not len(illegal_vals) == 0:
+        if len(illegal_vals) != 0:
             messages.append(f"Found illegal values {illegal_vals} in {col}, " \
-                f"expected value in [{', '.join([str(x) for x in s.valid_vals])}]."
+                f"expected value in [{', '.join([str(x) for x in s.valid_vals])}].",
             )
         if not s.nullable and data[col].isna().sum() > 0:
             messages.append(f"Found null values in non-nullable column {col}.")

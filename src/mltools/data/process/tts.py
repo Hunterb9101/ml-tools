@@ -1,12 +1,13 @@
 """
-Train Test Split Algorithms
+Train Test Split Algorithms.
 
 There are some cases where we will need something a little more sophisticated
 than what Scikit-learn will give us. This is where we will implement our own
 train/validation/test split algorithms.
 """
 import logging
-from typing import Optional, Dict, Any, Sequence
+from collections.abc import Sequence
+from typing import Any, Dict, Optional
 
 import numpy as np
 import pandas as pd
@@ -21,7 +22,7 @@ def compute_tts_split(
     df: pd.DataFrame,
     val_size: float = 0.2,
     test_size: float = 0.2,
-    tts_kwargs: Optional[Dict[str, Any]] = None
+    tts_kwargs: dict[str, Any] | None = None,
 ) -> TrainValTest[pd.DataFrame]:
     """
     Compute a train/val/test split of a DataFrame.
@@ -33,7 +34,7 @@ def compute_tts_split(
     test_size: float
     tts_kwargs: Optional[Dict[str, Any]]
         Keyword arguments to pass directly to `sklearn.model_selection.train_test_split`.
-    
+
     Returns
     -------
     TrainValTest[pd.DataFrame]
@@ -41,13 +42,16 @@ def compute_tts_split(
     """
     is_frac = val_size < 1 or test_size < 1
     if val_size <= 0 or test_size <= 0:
-        raise ValueError("val_size and test_size must be positive and non-zero.")
+        msg = "val_size and test_size must be positive and non-zero."
+        raise ValueError(msg)
     if val_size + test_size >= 1 and is_frac:
         # If the values look like they should be fractions, but sum to something
         # greater than 1, then we should raise an error..
-        raise ValueError("val_size and test_size must sum to less than 1 if using fractions.")
+        msg = "val_size and test_size must sum to less than 1 if using fractions."
+        raise ValueError(msg)
     if val_size + test_size >= len(df):
-        raise ValueError("val_size and test_size must sum to less than the number of rows in the dataframe.")
+        msg = "val_size and test_size must sum to less than the number of rows in the dataframe."
+        raise ValueError(msg)
 
     tts_kwargs = tts_kwargs or {}
 
@@ -66,8 +70,8 @@ def compute_oos_tts_split(
     values_val: Sequence[Any],
     values_test: Sequence[Any],
     val_to_test_ratio: float = 0.5,
-    tts_kwargs: Optional[Dict[str, Any]] = None,
-    shuffle_seed: int = 42
+    tts_kwargs: dict[str, Any] | None = None,
+    shuffle_seed: int = 42,
 ) -> TrainValTest[pd.DataFrame]:
     """
     Create validation and test sets from predetermined values from the dataframe.
@@ -90,14 +94,15 @@ def compute_oos_tts_split(
         Note that `stratify` will have little effect here.
     shuffle_seed: int
         The seed to use for shuffling the data.
-    
+
     Returns
     -------
     TrainValTest[pd.DataFrame]
         A TrainValTest object containing the train, validation, and test dataframes.
     """
     if not 0 < val_to_test_ratio < 1:
-        raise ValueError("val_to_test_ratio must be between 0 and 1, exclusive.")
+        msg = "val_to_test_ratio must be between 0 and 1, exclusive."
+        raise ValueError(msg)
 
     tts_kwargs = tts_kwargs or {}
     values_valtest = set(values_val) | set(values_test)
@@ -128,9 +133,8 @@ def compute_oos_tts_split(
 
 
 def _validate_split(tvt: TrainValTest[pd.DataFrame]) -> None:
-    """
-    Make sure that no splits are empty.
-    """
+    """Make sure that no splits are empty."""
     for f in tvt.model_fields:
         if len(getattr(tvt, f)) == 0:
-            raise ValueError(f"The {f} set is empty.")
+            msg = f"The {f} set is empty."
+            raise ValueError(msg)

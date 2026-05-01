@@ -1,8 +1,9 @@
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
 from mltools.data.transform import BaseTransformer
+
 
 class MovingAverage(BaseTransformer):
     """
@@ -19,11 +20,12 @@ class MovingAverage(BaseTransformer):
     rolling_kwargs: Optional[Dict[str, Any]]
         Any additional arguments to pass to the rolling method
     """
+
     def __init__(
             self,
-            cols: List[str],
-            windows: List[int],
-            rolling_kwargs: Optional[Dict[str, Any]] = None
+            cols: list[str],
+            windows: list[int],
+            rolling_kwargs: dict[str, Any] | None = None,
         ):
         self.cols = cols
         self.windows = windows
@@ -58,7 +60,8 @@ class Expanding(BaseTransformer):
     agg_fn: str
         The aggregation function to use for the expanding window.
     """
-    def __init__(self, cols: List[str], min_periods: int = 1, agg_fn: str = "mean"):
+
+    def __init__(self, cols: list[str], min_periods: int = 1, agg_fn: str = "mean"):
         self.cols = cols
         self.min_periods = min_periods
         self.agg_fn = agg_fn

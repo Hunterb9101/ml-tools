@@ -1,5 +1,6 @@
-from typing import Literal, Sequence
 import logging
+from collections.abc import Sequence
+from typing import Literal
 
 import numpy as np
 import pandas as pd
@@ -12,7 +13,7 @@ def si(old: Sequence, new: Sequence, bins: int=10, is_categorical: bool = False)
     """
     Calculate a stability index between two series. Input target scores for a
     Population Stability Index (PSI), or continuous feature samples for a Characteristic
-    Stability Index (CSI)
+    Stability Index (CSI).
 
     Parameters
     ----------
@@ -25,6 +26,7 @@ def si(old: Sequence, new: Sequence, bins: int=10, is_categorical: bool = False)
     is_categorical: bool
         Treat `old` and `new` as categorical variables. No quantiles will be calculated and bins
         will be unique category values.
+
     Returns
     -------
     float
@@ -37,10 +39,10 @@ def _si_df(old: Sequence, new: Sequence, bins: int=10, is_categorical: bool = Fa
     """
     Calculate a stability index between two series. Input target scores for a
     Population Stability Index (PSI), or continuous feature samples for a Characteristic
-    Stability Index (CSI)
+    Stability Index (CSI).
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     old: Sequence
         A dataframe that a model was trained on
     new: Sequence
@@ -51,16 +53,13 @@ def _si_df(old: Sequence, new: Sequence, bins: int=10, is_categorical: bool = Fa
         Treat `old` and `new` as categorical variables. No quantiles will be calculated and bins
         will be unique category values.
 
-    Returns:
-    --------
+    Returns
+    -------
     pd.DataFrame
         A dataframe with all of the key components necessary for
         computing a stability index.
     """
-    if is_categorical:
-        df = _counts_by_category(old=old, new=new)
-    else:
-        df = _counts_by_quantile(old=old, new=new, bins=bins)
+    df = _counts_by_category(old=old, new=new) if is_categorical else _counts_by_quantile(old=old, new=new, bins=bins)
     df["train_pct"] = df["old"] / len(old)
     df["score_pct"] = df["new"] / len(new)
     df["ln_score_train"] = np.log(df["score_pct"] / df["train_pct"])
@@ -74,11 +73,11 @@ def _counts_by_quantile(
     new: Sequence,
     bins: int = 10,
     clip_bounds: bool = True,
-    tol=1e-3
+    tol=1e-3,
 ) -> pd.DataFrame:
     """
-    Parameters:
-    -----------
+    Parameters
+    ----------
     old: Sequence
         A dataframe that a model was trained on
     new: Sequence
@@ -115,8 +114,8 @@ def _counts_by_quantile(
 
 def _counts_by_category(old: pd.Series, new: pd.Series) -> pd.DataFrame:
     """
-    Parameters:
-    -----------
+    Parameters
+    ----------
     old: Sequence
         A dataframe that a model was trained on
     new: Sequence
@@ -133,7 +132,7 @@ def _counts_by_category(old: pd.Series, new: pd.Series) -> pd.DataFrame:
     df = pd.DataFrame(categories, columns=["bin"])
     df = df.merge(old_counts, how="left", left_on="bin", right_on=old_counts.index)
     df = df.merge(new_counts, how="left", left_on="bin", right_on=new_counts.index)
-    df = df.fillna(0).astype({"old": 'int64', "new": 'int64'}, copy=False)
+    df = df.fillna(0).astype({"old": "int64", "new": "int64"}, copy=False)
 
     if len(df) > 50:
         logging.warning("Found over 50 unique categories between series %s and %s.", old.name, new.name)
@@ -146,7 +145,7 @@ def si_is_signifcant(
     bins: int = 10,
     is_categorical: bool = False,
     method: Literal["chisq", "norm", "industry"] = "norm",
-    quantile: float = 0.95
+    quantile: float = 0.95,
 ) -> bool:
     observed = si(old=old, new=new, bins=bins, is_categorical=is_categorical)
     if method == "chisq":
@@ -155,7 +154,8 @@ def si_is_signifcant(
         return observed > critical_value_norm(len_old=len(old), len_new=len(new), n_bins=bins, quantile=quantile)
     if method == "industry":
         return observed > 0.2
-    raise ValueError(f"Unexpected method: {method}")
+    msg = f"Unexpected method: {method}"
+    raise ValueError(msg)
 
 
 
@@ -176,7 +176,7 @@ def critical_value_chi2(len_new: int, len_old: int, n_bins: int, quantile: float
     to determine statistically significant cutoffs for PSI distribution differences.
 
     This method more closely follows the underlying distribution of PSI values, at the expense of being harder to
-    visualize quantiles. This method is said to agree closely with critical values obtained from the Normal 
+    visualize quantiles. This method is said to agree closely with critical values obtained from the Normal
     distribution.
     """
     z = ss.chi2.ppf(q=quantile, df=n_bins - 1)

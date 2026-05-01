@@ -1,16 +1,17 @@
 # pylint: disable=W0621,W0212
 
-import pytest
 import numpy as np
+import pytest
 
 import mltools.data.synthetic as core
+
 
 @pytest.fixture
 def schema_1():
     return [
         core.MockColumn("a", distribution=np.random.random),
         core.MockColumn("b", distribution=np.random.normal, distribution_kwargs={"loc": 5}, is_useful=False),
-        core.DupColumn("c", redundant_of="a")
+        core.DupColumn("c", redundant_of="a"),
     ]
 
 
@@ -20,7 +21,7 @@ def schema_2():
         core.MockColumn("a", distribution=np.random.random),
         core.MockColumn("b", distribution=np.random.random),
         core.MockColumn("c", distribution=np.random.random, is_useful=False),
-        core.DupColumn("d", redundant_of="a")
+        core.DupColumn("d", redundant_of="a"),
     ]
 
 
@@ -30,17 +31,17 @@ def schema_2():
         {"name": "a", "distribution": np.random.randn, "distribution_kwargs": None, "redundant_of": "b"},
         {"name": "a", "distribution": None, "distribution_kwargs": {"mu": 0.5}, "redundant_of": "b"},
         {"name": "a", "distribution": None, "distribution_kwargs": None},
-        {"name": "a", "distribution": None, "distribution_kwargs": None, "is_useful": False}
-    ]
+        {"name": "a", "distribution": None, "distribution_kwargs": None, "is_useful": False},
+    ],
 )
 def test_mock_column_early_errors(init):
-    """ Throw errors when certain column configurations are not available. """
+    """Throw errors when certain column configurations are not available."""
     with pytest.raises(ValueError):
         core.MockColumn(**init)
 
 
 def test_mock_column_warns():
-    """ Warn when a column is "useful", but is also duplicated from another. """
+    """Warn when a column is "useful", but is also duplicated from another."""
     with pytest.warns():
         core.MockColumn(name="a", redundant_of="b")
 
@@ -56,7 +57,7 @@ def test_mock_mgr_init(schema_1):
     core.MockManagerClassification(n_rows=100, columns=schema_1, idx_cols=["idx"])
 
 
-def test_mock_mgr_gen_X_unique_col_values(schema_2):
+def test_mock_mgr_gen_x_unique_col_values(schema_2):
     mock_mgr = core.MockManagerClassification(n_rows=100, columns=schema_2, idx_cols=["idx"])
     df = mock_mgr._generate_X()
     assert not np.equal(df["a"].values, df["b"].values).all()
@@ -64,7 +65,7 @@ def test_mock_mgr_gen_X_unique_col_values(schema_2):
     assert np.equal(df["a"].values, df["d"].values).all()
 
 
-def test_mock_mgr_gen_X(schema_1):
+def test_mock_mgr_gen_x(schema_1):
     mock_mgr = core.MockManagerClassification(n_rows=100, columns=schema_1, idx_cols=["idx"])
     df = mock_mgr._generate_X()
 
@@ -73,7 +74,7 @@ def test_mock_mgr_gen_X(schema_1):
     assert len(df["idx"]) == len(df["idx"].unique())
 
 
-def test_mock_mgr_gen_X_correct_size(schema_1):
+def test_mock_mgr_gen_x_correct_size(schema_1):
     mock_mgr = core.MockManagerClassification(n_rows=100, columns=schema_1, idx_cols=["idx"])
     df = mock_mgr._generate_X()
     # 3 generated columns from schema_1 and 1 index column
@@ -121,7 +122,7 @@ def test_mock_mgr_gen_y_thresholds(schema_1, threshold):
         n_rows=1000,
         columns=schema_1,
         idx_cols=["idx"],
-        class_balance=threshold
+        class_balance=threshold,
     )
     df = mock_mgr._generate_X()
     y = mock_mgr._generate_Y(df)

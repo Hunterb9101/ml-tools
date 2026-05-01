@@ -7,11 +7,12 @@ ModelPath Config: Manages key model-specific paths for modeling purposes. This
 Path Config: Manages key model-agnostic paths for data and artifacts.
 """
 from os.path import join
-from typing import Dict, Any
+from typing import Any, Dict
 
 import pydantic as pdt
 
 import mltools.types as mt
+
 
 class PathConfig(pdt.BaseModel):
     root_path: str = "/tmp"
@@ -46,7 +47,7 @@ class PathConfig(pdt.BaseModel):
         return mt.TrainValTest(
             train=join(self.processed_data_dir, "train.parquet"),
             val=join(self.processed_data_dir, "val.parquet"),
-            test=join(self.processed_data_dir, "test.parquet")
+            test=join(self.processed_data_dir, "test.parquet"),
         )
 
     @pdt.computed_field
@@ -84,7 +85,7 @@ class ModelPathConfig(pdt.BaseModel):
         return mt.TrainValTest(
             train=join(self.dmatrix_dir, f"train-{self.model}.parquet"),
             val=join(self.dmatrix_dir, f"val-{self.model}.parquet"),
-            test=join(self.dmatrix_dir, f"test-{self.model}.parquet")
+            test=join(self.dmatrix_dir, f"test-{self.model}.parquet"),
         )
 
     @pdt.computed_field
@@ -104,19 +105,16 @@ class ModelPathConfig(pdt.BaseModel):
     @pdt.computed_field
     @property
     def model_path(self) -> str:
-        """
-        The model artifact should be saved here.
-        """
+        """The model artifact should be saved here."""
         return join(self.model_dir, f"{self.model}.pkl")
 
 
 class ModelConfig(pdt.BaseModel):
-    """
-    A collection of model-specific configuration values.
-    """
+    """A collection of model-specific configuration values."""
+
     root_path: str = "/tmp"
-    params: Dict[str, Any] = {}
-    model: str = 'gbm'
+    params: dict[str, Any] = {}
+    model: str = "gbm"
 
     @pdt.computed_field
     @property

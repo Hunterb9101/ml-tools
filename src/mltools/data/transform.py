@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 import pandas as pd
 
+
 class BaseTransformer(ABC):
     @abstractmethod
     def fit(self, df: pd.DataFrame) -> None:

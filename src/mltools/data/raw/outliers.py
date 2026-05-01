@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import chi2
 
+
 def mad(x: pd.DataFrame, normalize: bool = False):
     x_arr = np.array(x)
     median = np.quantile(x_arr, 0.5, axis=0)
@@ -15,7 +16,7 @@ def mad(x: pd.DataFrame, normalize: bool = False):
         mad_val = mad_val / 0.67476
     return mad_val
 
-class MADMedianOutlierDetector():
+class MADMedianOutlierDetector:
     def __init__(self, q: float = 0.975):
         """
         Parameters
@@ -25,8 +26,8 @@ class MADMedianOutlierDetector():
             The default is 0.975, as found in literature.
         """
         self.q = q
-        self._obs_median: Optional[float] = None
-        self._obs_mad: Optional[float] = None
+        self._obs_median: float | None = None
+        self._obs_mad: float | None = None
 
     def _get_rule_cutoff(self) -> float:
         return sqrt(chi2.ppf(self.q, 1))
@@ -44,5 +45,4 @@ class MADMedianOutlierDetector():
 
     def fit_transform(self, x: pd.DataFrame) -> pd.DataFrame:
         self.fit(x)
-        out = self.transform(x)
-        return out
+        return self.transform(x)

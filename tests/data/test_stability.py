@@ -13,10 +13,8 @@ def test_counts_by_category():
     expected = pd.DataFrame([
         {"bin": 0, "old": 5, "new": 0},
         {"bin": 1, "old": 5, "new": 5},
-        {"bin": 2, "old": 0, "new": 5}
+        {"bin": 2, "old": 0, "new": 5},
     ])
-
-    print(df)
     assert df.equals(expected)
 
 @pytest.mark.parametrize("n_type", ["series", "list", None])
@@ -45,15 +43,15 @@ def test_si():
     assert np.isclose(mtds.si(new=n, old=n, bins=10), 0.0, atol=0.001)
 
 
-@pytest.mark.parametrize("method", ['chisq', 'industry', 'norm'])
+@pytest.mark.parametrize("method", ["chisq", "industry", "norm"])
 @pytest.mark.parametrize("quantile", [0.95, 0.99, 0.999])
-@pytest.mark.parametrize("old, new, expected",
+@pytest.mark.parametrize(("old", "new", "expected"),
     [
         (np.random.uniform(0, 1, size=1000), np.random.uniform(0, 1, size=500), False),
         (np.random.uniform(0, 1, size=1000), np.random.beta(3, 1, size=500), True),
         (np.random.uniform(0, 1, size=1000), np.random.uniform(-0.5, 1.5, size=500), True),
         (np.random.beta(0.5, 0.5, size=1000), np.random.normal(0, 1, size=500), True),
-    ]
+    ],
 )
 def test_si_significance(old, new, expected, method, quantile):
     assert mtds.si_is_signifcant(old=old, new=new, method=method, quantile=quantile) == expected

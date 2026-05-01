@@ -1,11 +1,10 @@
-from typing import List
-
 import numpy as np
 import pandas as pd
 
-def map_to_series(s: pd.Series, categories: List[pd.Interval]) -> pd.Series:
+
+def map_to_series(s: pd.Series, categories: list[pd.Interval]) -> pd.Series:
     """
-    Maps a continuous variable to a corresponding interval range
+    Maps a continuous variable to a corresponding interval range.
 
     Parameters
     ----------

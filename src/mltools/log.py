@@ -2,20 +2,21 @@ import logging
 from time import time
 from typing import Optional
 
+
 class Timer:
     def __init__(
         self,
         name: str,
         logger: logging.Logger,
-        level: int = logging.DEBUG
+        level: int = logging.DEBUG,
     ):
         self.name = name
         self.logger = logger
         self.level = level
 
-        self.start: Optional[float] = None
+        self.start: float | None = None
         self.elapsed: float = 0
-        self.end: Optional[float] = None
+        self.end: float | None = None
 
     def __call__(self, message: str):
         elapsed = time() - self.elapsed
