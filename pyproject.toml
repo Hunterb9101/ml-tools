@@ -14,7 +14,7 @@ name = "hb-mltools"
 dynamic = ["version", "optional-dependencies"]
 keywords = []
 description = "A platform for rapid development of Machine Learning algorithms."
-requires-python = ">=3.8"
+requires-python = ">=3.11"
 readme = "README.md"
 dependencies = [
     "lightgbm",
