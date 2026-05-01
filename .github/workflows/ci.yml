@@ -32,7 +32,7 @@ jobs:
         run: .venv/bin/python -m mypy --config-file mypy.ini src tests
 
       - name: Ruff
-        run: .venv/bin/python -m ruff check"
+        run: .venv/bin/python -m ruff check
 
       - name: Pytest
         run: .venv/bin/python -m pytest tests
