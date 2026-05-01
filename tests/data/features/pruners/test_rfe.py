@@ -9,8 +9,8 @@ from mltools.data.features.pruners.rfe import RFEPruner
 
 @pytest.fixture
 def data() -> pd.DataFrame:
-    useful = np.random.uniform(100, size=(100,4))
-    useless = np.random.uniform(100, size=(100,5))
+    useful = np.random.uniform(100, size=(100, 4))
+    useless = np.random.uniform(100, size=(100, 5))
     target = useful.sum(axis=1).reshape(-1, 1)
 
     data_ = np.hstack([useful, useless, target])

@@ -18,11 +18,10 @@ def schema_obj_1():
         ],
     )
 
+
 @pytest.fixture
 def int_schema():
-    return [
-        mts.SchemaObj(column=x, dtype="int64", valid_vals=[mts.SchemaRange(minval=i)]) for i, x in enumerate("abc")
-    ]
+    return [mts.SchemaObj(column=x, dtype="int64", valid_vals=[mts.SchemaRange(minval=i)]) for i, x in enumerate("abc")]
 
 
 @pytest.fixture
@@ -31,7 +30,8 @@ def mixed_numeric_schema():
         mts.SchemaObj(
             column=x,
             dtype="int64" if i % 2 == 0 else "float64",
-        ) for i, x in enumerate("ab")
+        )
+        for i, x in enumerate("ab")
     ]
 
 
@@ -48,7 +48,9 @@ def int_schema_with_exclusions():
         ),
     ]
 
-@pytest.mark.parametrize(("ser", "expected"),
+
+@pytest.mark.parametrize(
+    ("ser", "expected"),
     [
         (pd.Series([0, 1, 2]), True),
         (pd.Series([0, 1, 5]), False),
@@ -74,14 +76,17 @@ def test_validate_data(int_schema):
     assert len(msgs) == 0
 
 
-@pytest.mark.parametrize("data", [
-    # Allow float columns to be represented by an integer
-    (pd.DataFrame([{"a": i, "b": i} for i in range(20)])),
-    # Allow float columns to be represented by a float
-    (pd.DataFrame([{"a": i, "b": i / 2} for i in range(20)])),
-    # Allow float columns to be null
-    (pd.DataFrame([{"a": i, "b": None} for i in range(20)])),
-])
+@pytest.mark.parametrize(
+    "data",
+    [
+        # Allow float columns to be represented by an integer
+        (pd.DataFrame([{"a": i, "b": i} for i in range(20)])),
+        # Allow float columns to be represented by a float
+        (pd.DataFrame([{"a": i, "b": i / 2} for i in range(20)])),
+        # Allow float columns to be null
+        (pd.DataFrame([{"a": i, "b": None} for i in range(20)])),
+    ],
+)
 def test_validate_data_mixed(data, mixed_numeric_schema):
     msgs = mtv.validate_data(data=data, schema=mixed_numeric_schema)
     assert len(msgs) == 0
@@ -103,19 +108,22 @@ def test_validate_data_non_nullable():
 
 def test_validate_data_nullable():
     schema = [mts.SchemaObj(column="a", dtype="float64", valid_vals=[mts.SchemaRange(minval=0)])]
-    data = pd.DataFrame([{"a": None if i % 2 == 0 else np.NaN} for i in range(20)])
+    data = pd.DataFrame([{"a": None if i % 2 == 0 else np.nan} for i in range(20)])
     msgs = mtv.validate_data(data=data, schema=schema)
     assert len(msgs) == 0
 
 
-@pytest.mark.parametrize("data", [
-    # Do not allow decimals in integer columns
-    (pd.DataFrame([{"a": i / 2, "b": i} for i in range(20)])),
-    # Do not allow integer columns to be null
-    (pd.DataFrame([{"a": None , "b": i} for i in range(20)])),
-    # Do not allow float columns to have extraneous strings
-    (pd.DataFrame([{"a": i , "b": None if i % 2 == 0 else "b"} for i in range(20)])),
-])
+@pytest.mark.parametrize(
+    "data",
+    [
+        # Do not allow decimals in integer columns
+        (pd.DataFrame([{"a": i / 2, "b": i} for i in range(20)])),
+        # Do not allow integer columns to be null
+        (pd.DataFrame([{"a": None, "b": i} for i in range(20)])),
+        # Do not allow float columns to have extraneous strings
+        (pd.DataFrame([{"a": i, "b": None if i % 2 == 0 else "b"} for i in range(20)])),
+    ],
+)
 def test_validate_data_mixed_invalid_dtype(data, mixed_numeric_schema):
     msgs = mtv.validate_data(data=data, schema=mixed_numeric_schema)
     # Single datatype error present

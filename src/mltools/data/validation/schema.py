@@ -1,12 +1,17 @@
+"""Schema objects used by data validation helpers."""
+
 from collections.abc import Sequence
-from typing import Any, Union
+from typing import Any
 
 import numpy as np
 import pandas as pd
 
-NumericType = Union[float, int]
+NumericType = float | int
+
 
 class SchemaRange:
+    """Validate that numeric values fall within a bounded range."""
+
     def __init__(
         self,
         minval: NumericType | None = None,
@@ -28,6 +33,7 @@ class SchemaRange:
             raise ValueError(msg)
 
     def contains(self, ser: Sequence) -> np.ndarray:
+        """Return a mask indicating which values are within the range."""
         arr = np.array(ser) if not isinstance(ser, np.ndarray) else ser
         if not pd.api.types.is_numeric_dtype(arr.dtype):
             colname = ""
@@ -47,6 +53,7 @@ class SchemaRange:
         return np.array(lb_cond & ub_cond)
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the range to a dictionary."""
         return {
             "minval": self.minval,
             "maxval": self.maxval,
@@ -55,41 +62,52 @@ class SchemaRange:
         }
 
     def __eq__(self, other) -> bool:
+        """Compare serialized range values."""
         return self.to_dict() == self.to_dict() if isinstance(self, type(other)) else False
 
     def __str__(self) -> str:
+        """Return a human-readable range representation."""
         lower_bound_char = "[" if self.include_lb else "("
         upper_bound_char = "]" if self.include_ub else ")"
         return f"Range{lower_bound_char}{self.minval}, {self.maxval}{upper_bound_char}"
 
 
 class SchemaList:
+    """Validate that values are included in an explicit list."""
+
     def __init__(self, vals: list[Any]):
         self.vals = vals
 
     def contains(self, ser: Sequence) -> np.ndarray:
+        """Return a mask indicating which values are present in the list."""
         if not isinstance(ser, pd.Series):
             ser = pd.Series(ser)
         return np.array(ser.isin(self.vals))
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the list validator to a dictionary."""
         return {
             "vals": self.vals,
         }
 
     def __eq__(self, other) -> bool:
+        """Compare serialized list values."""
         return self.to_dict() == self.to_dict() if isinstance(self, type(other)) else False
 
     def __str__(self) -> str:
+        """Return a human-readable list representation."""
         return f"List[{', '.join([str(x) for x in self.vals])}]"
 
 
 class SchemaObj:
+    """Describe validation rules for a dataframe column."""
+
     def __init__(
         self,
         column: str,
         dtype: str,
         valid_vals: list[SchemaList | SchemaRange] | None = None,
+        *,
         nullable: bool = True,
     ):
         self.column = column
@@ -98,6 +116,7 @@ class SchemaObj:
         self.nullable = nullable
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the schema object to a dictionary."""
         return {
             "column": self.column,
             "dtype": self.dtype,
@@ -107,17 +126,21 @@ class SchemaObj:
 
 
 def dict_to_valid_vals(input_dict: dict[str, Any]) -> SchemaRange | SchemaList:
+    """Convert a serialized value validator into a schema validator."""
     input_dict = input_dict.copy()
     if ("minval" in input_dict or "maxval" in input_dict) and "vals" not in input_dict:
         return SchemaRange(**input_dict)
     if ("minval" not in input_dict and "maxval" not in input_dict) and "vals" in input_dict:
         return SchemaList(**input_dict)
-    err_msg = f"Unable to parse valid ranges for {input_dict}, " \
+    err_msg = (
+        f"Unable to parse valid ranges for {input_dict}, "
         "make sure only a range or a list of values are provided per entry."
+    )
     raise ValueError(err_msg)
 
 
 def dict_to_schema(schema: list[dict[str, Any]]) -> list[SchemaObj]:
+    """Convert a serialized schema into schema objects."""
     new_schema = []
     for s in schema:
         if "valid_vals" in s:

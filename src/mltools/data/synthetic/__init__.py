@@ -1,18 +1,23 @@
+"""Synthetic data generation utilities."""
+
 import warnings
 from collections.abc import Callable
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import numpy as np
 import pandas as pd
 
 
 class MockColumn:
+    """Describe a synthetic data column."""
+
     def __init__(
         self,
         name: str,
         distribution: Callable | None = None,
         distribution_kwargs: dict[str, Any] | None = None,
         redundant_of: str | None = None,
+        *,
         is_useful: bool = True,
     ):
         self.name = name
@@ -29,13 +34,15 @@ class MockColumn:
             raise ValueError(msg)
         if is_useful and redundant_of:
             warnings.warn("is_useful=True for a redundant column. Ignoring.")
-            self.is_useful= False
+            self.is_useful = False
         if not redundant_of and not distribution:
             msg = "Must define a distribution for a non-redundant column"
             raise ValueError(msg)
 
 
 class DupColumn(MockColumn):
+    """Describe a duplicate synthetic data column."""
+
     def __init__(self, name: str, redundant_of: str):
         super().__init__(
             name=name,
@@ -47,10 +54,13 @@ class DupColumn(MockColumn):
 
 
 class MockManagerClassification:
+    """Generate a mock classification dataframe."""
+
     # TODO: Break this out a little more. Not all mocks need a target column
     # Maybe MockManagerBase, MockManagerDataset, and MockManagerClassification?
     @property
     def columns(self):
+        """Return configured columns."""
         return self._columns
 
     @columns.setter
@@ -73,11 +83,18 @@ class MockManagerClassification:
         self,
         n_rows: int,
         columns: list[MockColumn | DupColumn],
-        idx_cols: list[str] | None = None,
-        target_col: str | None = "y",
-        class_balance: float = 0.5,
-        seed: int = 0,
+        **kwargs,
     ):
+        allowed_kwargs = {"idx_cols", "target_col", "class_balance", "seed"}
+        unexpected_kwargs = set(kwargs) - allowed_kwargs
+        if unexpected_kwargs:
+            msg = f"Unexpected arguments: {sorted(unexpected_kwargs)}"
+            raise TypeError(msg)
+        idx_cols = kwargs.get("idx_cols")
+        target_col = kwargs.get("target_col", "y")
+        class_balance = kwargs.get("class_balance", 0.5)
+        seed = kwargs.get("seed", 0)
+
         self.n_rows = n_rows
 
         self._redundant = []
@@ -90,9 +107,12 @@ class MockManagerClassification:
         self.class_balance = class_balance
         self.seed = seed
 
-        assert 0 < class_balance < 1
+        if not (0 < class_balance < 1):
+            msg = "Class balance outside of 0 to 1 range."
+            raise ValueError(msg)
 
-    def _generate_X(self) -> pd.DataFrame:
+    def _generate_x(self) -> pd.DataFrame:
+        """Generate feature columns."""
         np.random.seed(self.seed)
         data = {}
         for i, idx in enumerate(self.idx_cols):
@@ -106,34 +126,54 @@ class MockManagerClassification:
             data[r.name] = data[r.redundant_of]
         return pd.DataFrame.from_dict(data)
 
-    def _generate_Y(self, X: pd.DataFrame) -> pd.DataFrame:
+    def _generate_y(self, x: pd.DataFrame) -> pd.DataFrame:
+        """Generate the target column."""
         np.random.seed(self.seed)
         # TODO: Make this work for useful categoricals / throw better warnings
-        data = X[[c.name for c in self._useful]].values
+        data = x[[c.name for c in self._useful]].to_numpy()
         logits = (data - data.mean(axis=0)).sum(axis=1)
         y = (logits < np.percentile(logits, self.class_balance * 100)).astype(int)
         return pd.Series(y, name=self.target_col)
 
     def generate(self) -> pd.DataFrame:
-        X = self._generate_X()
+        """Generate a full synthetic dataframe."""
+        x = self._generate_x()
         if self.target_col:
-            y = self._generate_Y(X)
-            X[self.target_col] = y
-        return X
+            y = self._generate_y(x)
+            x[self.target_col] = y
+        return x
 
 
 def linearly_separable_data(
     n_rows: int = 100,
-    n_useful_cols: int = 2,
-    n_useless_cols: int = 2,
-    seed: int = 0,
-    add_redundant: bool = True,
-    useful_pfx: str = "useful",
-    useless_pfx: str = "useless",
-    redundant_pfx: str = "redundant",
-    idx_cols: list[str] | None = None,
-    target_col: str = "y",
+    **kwargs,
 ):
+    """Generate a linearly separable classification dataframe."""
+    allowed_kwargs = {
+        "n_useful_cols",
+        "n_useless_cols",
+        "seed",
+        "add_redundant",
+        "useful_pfx",
+        "useless_pfx",
+        "redundant_pfx",
+        "idx_cols",
+        "target_col",
+    }
+    unexpected_kwargs = set(kwargs) - allowed_kwargs
+    if unexpected_kwargs:
+        msg = f"Unexpected arguments: {sorted(unexpected_kwargs)}"
+        raise TypeError(msg)
+    n_useful_cols = kwargs.get("n_useful_cols", 2)
+    n_useless_cols = kwargs.get("n_useless_cols", 2)
+    seed = kwargs.get("seed", 0)
+    add_redundant = kwargs.get("add_redundant", True)
+    useful_pfx = kwargs.get("useful_pfx", "useful")
+    useless_pfx = kwargs.get("useless_pfx", "useless")
+    redundant_pfx = kwargs.get("redundant_pfx", "redundant")
+    idx_cols = kwargs.get("idx_cols")
+    target_col = kwargs.get("target_col", "y")
+
     columns: list[MockColumn | DupColumn] = []
     idx_cols = idx_cols or []
     if add_redundant:
@@ -143,7 +183,6 @@ def linearly_separable_data(
         columns.append(MockColumn(f"{useless_pfx}{i}", distribution=np.random.normal, is_useful=False))
     useful = [MockColumn(f"{useful_pfx}{i}", distribution=np.random.normal) for i in range(n_useful_cols)]
     columns.extend(useful)
-
 
     mmc = MockManagerClassification(
         n_rows=n_rows,

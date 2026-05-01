@@ -1,5 +1,6 @@
+"""Interaction feature generation."""
+
 import logging
-from typing import Dict, List
 
 import pandas as pd
 
@@ -7,8 +8,10 @@ from mltools.data.raw.discretizer import Discretizer
 
 logger = logging.getLogger(__name__)
 
+
 class Interaction:
-    """
+    """Augment a dataset with interaction features.
+
     The Interaction class is used to augment a dataset with interaction features in the form
     new_X = X - E[X|Y].
     """
@@ -49,13 +52,14 @@ class Interaction:
                 logger.debug("Unable to create %s|%s interaction feature", x, y)
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Add fitted interaction features to the dataframe."""
         old_cols = len(df.columns)
         df = df.copy()
         orig_cols = df.columns
         df = self.discretizer.transform(df)
         rm_cols = list(set(df.columns) - set(orig_cols))
 
-        colnames =  []
+        colnames = []
         series = []
 
         for c in self.cols:
@@ -63,7 +67,7 @@ class Interaction:
                 colnames.append(self.feature_name.format(x=c, y=k))
                 series.append(df[k].map(v))
 
-        aug =  pd.concat(series, axis=1)
+        aug = pd.concat(series, axis=1)
         aug.columns = colnames
         df = pd.concat([df, aug], axis=1)
         logger.debug("Added %s interaction features", len(df.columns) - old_cols)

@@ -1,4 +1,6 @@
-from typing import TYPE_CHECKING, Dict, List, Optional
+"""Continuous feature discretization."""
+
+from typing import TYPE_CHECKING
 
 import pandas as pd
 
@@ -49,6 +51,7 @@ class Discretizer:
         return out
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Add discretized columns to the dataframe."""
         df = df.copy()
         if self.bucket_cols is None:
             msg = "Must fit before transforming"
@@ -61,6 +64,7 @@ class Discretizer:
         """Convert a single column into a quantized bucket using self.bucket_map."""
         return pd.cut(ser, self.bucket_map[ser.name], labels=False, include_lowest=True)
 
-    def fit_transform(self, df:pd.DataFrame) -> pd.DataFrame:
+    def fit_transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Fit the discretizer and return transformed data."""
         self.fit(df)
         return self.transform(df)

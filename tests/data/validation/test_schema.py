@@ -5,7 +5,8 @@ import pytest
 import mltools.data.validation.schema as mts
 
 
-@pytest.mark.parametrize(("minval", "maxval", "include_lb", "include_ub"),
+@pytest.mark.parametrize(
+    ("minval", "maxval", "include_lb", "include_ub"),
     [
         (0, 1, True, True),
         (0, None, True, True),
@@ -13,11 +14,12 @@ import mltools.data.validation.schema as mts
     ],
 )
 def test_schema_range_init(minval, maxval, include_lb, include_ub):
-    mts.SchemaRange(minval, maxval, include_lb, include_ub)
+    mts.SchemaRange(minval, maxval, include_lb=include_lb, include_ub=include_ub)
 
 
 @pytest.mark.parametrize("input_fn", [np.array, pd.Series, None])
-@pytest.mark.parametrize(("schemarange", "val", "expected"),
+@pytest.mark.parametrize(
+    ("schemarange", "val", "expected"),
     [
         # Check that float ranges (Inclusive) work correctly
         (mts.SchemaRange(0.0, 2.0, include_lb=True, include_ub=True), 0.0, True),
@@ -62,7 +64,8 @@ def test_schema_range_contains(input_fn, schemarange, val, expected):
 
 
 @pytest.mark.parametrize("input_fn", [np.array, pd.Series, None])
-@pytest.mark.parametrize(("schemarange", "val"),
+@pytest.mark.parametrize(
+    ("schemarange", "val"),
     [
         (mts.SchemaRange(0, 100, include_lb=True, include_ub=True), "a"),
         (mts.SchemaRange(0, 100, include_lb=True, include_ub=True), [0, 1, "a"]),
@@ -71,12 +74,14 @@ def test_schema_range_contains(input_fn, schemarange, val, expected):
 def test_schema_bad_inputs(schemarange, val, input_fn):
     if not isinstance(val, list):
         val = [val]
-    with pytest.raises(Exception):
-        schemarange.contains(input_fn(val))
+    data = input_fn(val) if input_fn is not None else val
+    with pytest.raises(NotImplementedError, match=r"Datatype .* is not supported"):
+        schemarange.contains(data)
 
 
 @pytest.mark.parametrize("input_fn", [np.array, pd.Series, None])
-@pytest.mark.parametrize(("schemalist", "val", "expected"),
+@pytest.mark.parametrize(
+    ("schemalist", "val", "expected"),
     [
         (mts.SchemaList(["a", "b", "c"]), "a", True),
         (mts.SchemaList(["a", "b", "c"]), 1, False),
@@ -102,5 +107,5 @@ def test_unpack_pack_schemarange():
 
 
 def test_bad_dict_to_valid_vals():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Unable to parse valid ranges"):
         mts.dict_to_valid_vals({"minval": 10, "vals": [1, 2, 3]})

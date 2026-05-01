@@ -5,9 +5,10 @@ There are some cases where we will need something a little more sophisticated
 than what Scikit-learn will give us. This is where we will implement our own
 train/validation/test split algorithms.
 """
+
 import logging
 from collections.abc import Sequence
-from typing import Any, Dict, Optional
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -69,12 +70,10 @@ def compute_oos_tts_split(
     split_col: str,
     values_val: Sequence[Any],
     values_test: Sequence[Any],
-    val_to_test_ratio: float = 0.5,
-    tts_kwargs: dict[str, Any] | None = None,
-    shuffle_seed: int = 42,
+    **kwargs,
 ) -> TrainValTest[pd.DataFrame]:
-    """
-    Create validation and test sets from predetermined values from the dataframe.
+    """Create validation and test sets from predetermined dataframe values.
+
     This is intended to be used for creating out-of-time/out-of-sample datasets.
 
     Parameters
@@ -100,6 +99,15 @@ def compute_oos_tts_split(
     TrainValTest[pd.DataFrame]
         A TrainValTest object containing the train, validation, and test dataframes.
     """
+    allowed_kwargs = {"val_to_test_ratio", "tts_kwargs", "shuffle_seed"}
+    unexpected_kwargs = set(kwargs) - allowed_kwargs
+    if unexpected_kwargs:
+        msg = f"Unexpected arguments: {sorted(unexpected_kwargs)}"
+        raise TypeError(msg)
+    val_to_test_ratio = kwargs.get("val_to_test_ratio", 0.5)
+    tts_kwargs = kwargs.get("tts_kwargs")
+    shuffle_seed = kwargs.get("shuffle_seed", 42)
+
     if not 0 < val_to_test_ratio < 1:
         msg = "val_to_test_ratio must be between 0 and 1, exclusive."
         raise ValueError(msg)

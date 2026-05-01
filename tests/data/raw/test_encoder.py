@@ -27,6 +27,7 @@ def test_target_encoder_extraneous_cols():
     pd.testing.assert_series_equal(out["a"], pd.Series([1.0, 1.0, 1.0, 0.0, 0.0, 0.0], name="a"))
     pd.testing.assert_series_equal(out["b"], pd.Series(b, name="b"))
 
+
 def test_fit_transform_target_encoder():
     df = pd.DataFrame({"a": [1, 1, 1, 2, 2, 2], "b": [1, 2, 3, 1, 2, 3], "y": [1, 1, 1, 0, 0, 0]})
     te = mdre.TargetEncoder(["a", "b"], "y")

@@ -1,4 +1,4 @@
-from typing import List
+"""Prediction blending transformer."""
 
 import pandas as pd
 
@@ -6,7 +6,9 @@ from mltools.data.transform import BaseTransformer
 
 
 class Blender(BaseTransformer):
-    def __init__(self, weights: list[float], cols: list[float], out_col: str = "blend", normalize: bool = True):
+    """Blend multiple columns using configured weights."""
+
+    def __init__(self, weights: list[float], cols: list[float], out_col: str = "blend", *, normalize: bool = True):
         self._validate_weights(weights)
         sum_weights = sum(weights)
         self.weights = [w / sum_weights for w in weights] if normalize else weights
@@ -24,9 +26,10 @@ class Blender(BaseTransformer):
             raise ValueError(msg)
 
     def fit(self, df: pd.DataFrame) -> None:
-        pass
+        """Fit the transformer."""
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Return a dataframe with the blended output column."""
         dfc = df.copy()
         dfc[self.out_col] = 0
 

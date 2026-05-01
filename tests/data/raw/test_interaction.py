@@ -8,16 +8,18 @@ from mltools.data.raw import interaction
 
 @pytest.fixture
 def inter_df():
-    a = np.array([int(x) for x in list("7"*20 + "8"*20 + "9"*20)]).reshape(60, 1)
-    b = np.array([int(x) for x in list("8"*30 + "9"*30)]).reshape(60, 1)
+    a = np.array([int(x) for x in list("7" * 20 + "8" * 20 + "9" * 20)]).reshape(60, 1)
+    b = np.array([int(x) for x in list("8" * 30 + "9" * 30)]).reshape(60, 1)
 
     return pd.DataFrame(np.hstack([a, b]), columns=["a", "b"])
 
+
 @pytest.fixture
 def inter_df2(inter_df):
-    c = np.array([int(x) for x in list("4"*15 + "5"*15 + "6"*15 + "7"*15)]).reshape(60, 1)
+    c = np.array([int(x) for x in list("4" * 15 + "5" * 15 + "6" * 15 + "7" * 15)]).reshape(60, 1)
     inter_df["c"] = c
     return inter_df
+
 
 def test_interaction_fit(inter_df):
     i = interaction.Interaction(["a", "b"], max_unique_vals=2)

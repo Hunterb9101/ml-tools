@@ -1,3 +1,5 @@
+"""Moment-based feature pruners."""
+
 import pandas as pd
 
 from mltools.data.features.pruners import BasePruner

@@ -8,8 +8,8 @@ from mltools.data.raw import interaction
 
 @pytest.fixture
 def discretize_df():
-    a = np.array([int(x) for x in list("1"*20 + "2"*20 + "3"*20)]).reshape(60, 1)
-    b = np.array([int(x) for x in list("1"*30 + "2"*30)]).reshape(60, 1)
+    a = np.array([int(x) for x in list("1" * 20 + "2" * 20 + "3" * 20)]).reshape(60, 1)
+    b = np.array([int(x) for x in list("1" * 30 + "2" * 30)]).reshape(60, 1)
 
     return pd.DataFrame(np.hstack([a, b]), columns=["a", "b"])
 

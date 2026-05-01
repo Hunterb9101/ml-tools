@@ -1,4 +1,6 @@
-from typing import Any, Dict, List, Optional
+"""Moving window feature transformers."""
+
+from typing import Any
 
 import pandas as pd
 
@@ -6,7 +8,8 @@ from mltools.data.transform import BaseTransformer
 
 
 class MovingAverage(BaseTransformer):
-    """
+    """Calculate rolling moving averages.
+
     Utilizes the pandas rolling method to calculate the moving average of the
     specified columns, for the specified windows. Note that the data is expected
     to be sorted when using this transformer.
@@ -22,20 +25,22 @@ class MovingAverage(BaseTransformer):
     """
 
     def __init__(
-            self,
-            cols: list[str],
-            windows: list[int],
-            rolling_kwargs: dict[str, Any] | None = None,
-        ):
+        self,
+        cols: list[str],
+        windows: list[int],
+        rolling_kwargs: dict[str, Any] | None = None,
+    ):
         self.cols = cols
         self.windows = windows
         self.rolling_kwargs = rolling_kwargs or {}
 
     def fit(self, df: pd.DataFrame) -> None:
-        pass
+        """Fit the transformer."""
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
-        new_cols = {self._column_fmt(col, window): df[col].rolling(window, **self.rolling_kwargs).mean()
+        """Add moving average columns to the dataframe."""
+        new_cols = {
+            self._column_fmt(col, window): df[col].rolling(window, **self.rolling_kwargs).mean()
             for col in self.cols
             for window in self.windows
         }
@@ -46,7 +51,8 @@ class MovingAverage(BaseTransformer):
 
 
 class Expanding(BaseTransformer):
-    """
+    """Calculate expanding-window aggregations.
+
     Utilizes the pandas expanding method to calculate the expanding average of the
     specified columns. Note that the data is expected to be sorted when using this
     transformer.
@@ -67,11 +73,12 @@ class Expanding(BaseTransformer):
         self.agg_fn = agg_fn
 
     def fit(self, df: pd.DataFrame) -> None:
-        pass
+        """Fit the transformer."""
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
-        new_cols = {self._column_fmt(col): df[col].expanding(min_periods=self.min_periods).agg(self.agg_fn)
-            for col in self.cols
+        """Add expanding aggregation columns to the dataframe."""
+        new_cols = {
+            self._column_fmt(col): df[col].expanding(min_periods=self.min_periods).agg(self.agg_fn) for col in self.cols
         }
         return df.assign(**new_cols)
 

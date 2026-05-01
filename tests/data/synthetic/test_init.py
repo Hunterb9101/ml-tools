@@ -36,7 +36,7 @@ def schema_2():
 )
 def test_mock_column_early_errors(init):
     """Throw errors when certain column configurations are not available."""
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=r"Cannot set distribution|Must define a distribution"):
         core.MockColumn(**init)
 
 
@@ -59,7 +59,7 @@ def test_mock_mgr_init(schema_1):
 
 def test_mock_mgr_gen_x_unique_col_values(schema_2):
     mock_mgr = core.MockManagerClassification(n_rows=100, columns=schema_2, idx_cols=["idx"])
-    df = mock_mgr._generate_X()
+    df = mock_mgr._generate_x()
     assert not np.equal(df["a"].values, df["b"].values).all()
     assert not np.equal(df["a"].values, df["c"].values).all()
     assert np.equal(df["a"].values, df["d"].values).all()
@@ -67,7 +67,7 @@ def test_mock_mgr_gen_x_unique_col_values(schema_2):
 
 def test_mock_mgr_gen_x(schema_1):
     mock_mgr = core.MockManagerClassification(n_rows=100, columns=schema_1, idx_cols=["idx"])
-    df = mock_mgr._generate_X()
+    df = mock_mgr._generate_x()
 
     # "c" should be a duplicate of "a" as defined in schema_1
     assert np.equal(df["a"].values, df["c"].values).all()
@@ -76,43 +76,43 @@ def test_mock_mgr_gen_x(schema_1):
 
 def test_mock_mgr_gen_x_correct_size(schema_1):
     mock_mgr = core.MockManagerClassification(n_rows=100, columns=schema_1, idx_cols=["idx"])
-    df = mock_mgr._generate_X()
+    df = mock_mgr._generate_x()
     # 3 generated columns from schema_1 and 1 index column
     assert len(df.columns) == 4
     # Assert length is correct
     assert len(df) == 100
 
 
-def test_mock_mgr_gen_X_single_idx(schema_1):
+def test_mock_mgr_gen_x_single_idx(schema_1):
     mock_mgr = core.MockManagerClassification(n_rows=100, columns=schema_1, idx_cols=["idx"])
-    df = mock_mgr._generate_X()
+    df = mock_mgr._generate_x()
     assert len(df["idx"]) == len(df["idx"].unique())
 
 
-def test_mock_mgr_gen_X_reproducible(schema_1):
+def test_mock_mgr_gen_x_reproducible(schema_1):
     mock_mgr = core.MockManagerClassification(n_rows=100, columns=schema_1)
-    df = mock_mgr._generate_X()
+    df = mock_mgr._generate_x()
 
     mock_mgr2 = core.MockManagerClassification(n_rows=100, columns=schema_1)
-    df2 = mock_mgr2._generate_X()
+    df2 = mock_mgr2._generate_x()
     assert df.equals(df2)
 
 
 def test_mock_mgr_gen_y(schema_1):
     mock_mgr = core.MockManagerClassification(n_rows=100, columns=schema_1, idx_cols=["idx"])
-    df = mock_mgr._generate_X()
-    y = mock_mgr._generate_Y(df)
+    df = mock_mgr._generate_x()
+    y = mock_mgr._generate_y(df)
     assert len(y.unique()) == 2
 
 
 def test_mock_mgr_gen_y_reproducible(schema_1):
     mock_mgr = core.MockManagerClassification(n_rows=100, columns=schema_1, idx_cols=["idx"])
-    df = mock_mgr._generate_X()
-    y = mock_mgr._generate_Y(df)
+    df = mock_mgr._generate_x()
+    y = mock_mgr._generate_y(df)
 
     mock_mgr2 = core.MockManagerClassification(n_rows=100, columns=schema_1, idx_cols=["idx"])
-    df2 = mock_mgr._generate_X()
-    y2 = mock_mgr2._generate_Y(df2)
+    df2 = mock_mgr._generate_x()
+    y2 = mock_mgr2._generate_y(df2)
     assert y.equals(y2)
 
 
@@ -124,8 +124,8 @@ def test_mock_mgr_gen_y_thresholds(schema_1, threshold):
         idx_cols=["idx"],
         class_balance=threshold,
     )
-    df = mock_mgr._generate_X()
-    y = mock_mgr._generate_Y(df)
+    df = mock_mgr._generate_x()
+    y = mock_mgr._generate_y(df)
     assert np.isclose(y.mean(), threshold, atol=0.02)
 
 

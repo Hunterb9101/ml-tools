@@ -1,4 +1,4 @@
-from typing import List
+"""Data validation helpers."""
 
 import numpy as np
 import pandas as pd
@@ -50,7 +50,7 @@ def _illegal_values(col: pd.Series, s: mts.SchemaObj) -> pd.Series:
     illegal = _illegal_values_idx(col=col, s=s)
     illegal_vals = pd.Series(col.iloc[illegal].unique())
     if s.nullable:
-        illegal_vals = illegal_vals[~pd.isnull(illegal_vals)]
+        illegal_vals = illegal_vals[~pd.isna(illegal_vals)]
     return illegal_vals
 
 
@@ -84,7 +84,8 @@ def validate_data(data: pd.DataFrame, schema: list[mts.SchemaObj]) -> list[str]:
 
         illegal_vals = _illegal_values(data[col], s).tolist()
         if len(illegal_vals) != 0:
-            messages.append(f"Found illegal values {illegal_vals} in {col}, " \
+            messages.append(
+                f"Found illegal values {illegal_vals} in {col}, "
                 f"expected value in [{', '.join([str(x) for x in s.valid_vals])}].",
             )
         if not s.nullable and data[col].isna().sum() > 0:

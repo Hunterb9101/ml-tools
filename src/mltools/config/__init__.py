@@ -6,8 +6,10 @@ ModelPath Config: Manages key model-specific paths for modeling purposes. This
     is used within the `ModelConfig` class.
 Path Config: Manages key model-agnostic paths for data and artifacts.
 """
-from os.path import join
-from typing import Any, Dict
+
+from pathlib import Path
+from tempfile import gettempdir
+from typing import Any
 
 import pydantic as pdt
 
@@ -15,108 +17,123 @@ import mltools.types as mt
 
 
 class PathConfig(pdt.BaseModel):
-    root_path: str = "/tmp"
+    """Manage model-agnostic paths for data and artifacts."""
+
+    root_path: str = gettempdir()
     tag: str = "prod"
 
     @pdt.computed_field
     @property
     def data_path(self) -> str:
-        return join(self.root_path, "data")
+        """Return the root data directory."""
+        return str(Path(self.root_path) / "data")
 
     @pdt.computed_field
     @property
     def raw_data_path(self) -> str:
-        """
-        Contains raw data files. This should combine data sources down to a
+        """Return the raw training data path.
+
+        This should combine data sources down to a
         single file, but that does not mean that it is fully processed.
         """
-        return join(self.data_path, "raw", "train.parquet")
+        return str(Path(self.data_path) / "raw" / "train.parquet")
 
     @pdt.computed_field
     @property
     def processed_data_dir(self) -> str:
-        """
-        Contains the processed data files. These should be split into train, val, and test,
+        """Return the processed data directory.
+
+        These files should be split into train, val, and test,
         but still model-agnostic.
         """
-        return join(self.data_path, "processed")
+        return str(Path(self.data_path) / "processed")
 
     @pdt.computed_field
     @property
     def processed_data_path(self) -> mt.TrainValTest[str]:
+        """Return train, validation, and test processed data paths."""
         return mt.TrainValTest(
-            train=join(self.processed_data_dir, "train.parquet"),
-            val=join(self.processed_data_dir, "val.parquet"),
-            test=join(self.processed_data_dir, "test.parquet"),
+            train=str(Path(self.processed_data_dir) / "train.parquet"),
+            val=str(Path(self.processed_data_dir) / "val.parquet"),
+            test=str(Path(self.processed_data_dir) / "test.parquet"),
         )
 
     @pdt.computed_field
     @property
     def artifact_dir(self) -> str:
-        """
+        """Return the model-agnostic artifact directory.
+
         Model-agnostic artifacts should be saved here, such as processing data
         pipelines.
         """
-        return join(self.data_path, "artifacts")
+        return str(Path(self.data_path) / "artifacts")
 
 
 class ModelPathConfig(pdt.BaseModel):
-    root_path: str = "/tmp"
+    """Manage model-specific paths for modeling artifacts."""
+
+    root_path: str = gettempdir()
     model: str
 
     @pdt.computed_field
     @property
     def data_path(self) -> str:
-        return join(self.root_path, "data")
+        """Return the root data directory."""
+        return str(Path(self.root_path) / "data")
 
     @pdt.computed_field
     @property
     def dmatrix_dir(self) -> str:
-        """
-        Contains the final design matrix files, created from the processed data.
+        """Return the design matrix directory.
+
+        This contains the final design matrix files, created from the processed data.
         Any model-specific transformations should be performed here, such as
         feature selection, conversion to a Torch Dataset, etc.
         """
-        return join(self.data_path, "dmatrix")
+        return str(Path(self.data_path) / "dmatrix")
 
     @pdt.computed_field
     @property
     def dmatrix_path(self) -> mt.TrainValTest[str]:
+        """Return train, validation, and test design matrix paths."""
         return mt.TrainValTest(
-            train=join(self.dmatrix_dir, f"train-{self.model}.parquet"),
-            val=join(self.dmatrix_dir, f"val-{self.model}.parquet"),
-            test=join(self.dmatrix_dir, f"test-{self.model}.parquet"),
+            train=str(Path(self.dmatrix_dir) / f"train-{self.model}.parquet"),
+            val=str(Path(self.dmatrix_dir) / f"val-{self.model}.parquet"),
+            test=str(Path(self.dmatrix_dir) / f"test-{self.model}.parquet"),
         )
 
     @pdt.computed_field
     @property
     def feature_pipeline_path(self) -> str:
-        """
-        The feature selection and agumentation pipeline, a fit/transform class,
+        """Return the feature pipeline artifact path.
+
+        The feature selection and augmentation pipeline, a fit/transform class,
         should be saved as a pickle file here.
         """
-        return join(self.model_dir, f"fp-{self.model}.pkl")
+        return str(Path(self.model_dir) / f"fp-{self.model}.pkl")
 
     @pdt.computed_field
     @property
     def model_dir(self) -> str:
-        return join(self.root_path, "models")
+        """Return the model artifact directory."""
+        return str(Path(self.root_path) / "models")
 
     @pdt.computed_field
     @property
     def model_path(self) -> str:
         """The model artifact should be saved here."""
-        return join(self.model_dir, f"{self.model}.pkl")
+        return str(Path(self.model_dir) / f"{self.model}.pkl")
 
 
 class ModelConfig(pdt.BaseModel):
     """A collection of model-specific configuration values."""
 
-    root_path: str = "/tmp"
+    root_path: str = gettempdir()
     params: dict[str, Any] = {}
     model: str = "gbm"
 
     @pdt.computed_field
     @property
     def paths(self) -> ModelPathConfig:
+        """Return model-specific path configuration."""
         return ModelPathConfig(root_path=self.root_path, model=self.model)

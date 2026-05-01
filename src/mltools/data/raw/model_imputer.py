@@ -1,5 +1,6 @@
+"""Model-based missing value imputation."""
+
 import logging
-from typing import List, Optional, Tuple
 
 import pandas as pd
 import sklearn.metrics as sm
@@ -8,8 +9,12 @@ from mltools.data.transform import BaseTransformer
 
 logger = logging.getLogger(__name__)
 
+
 class ModelImputer(BaseTransformer):
-    def __init__(self,
+    """Impute missing target values with a fitted model."""
+
+    def __init__(
+        self,
         model,
         target_col: str,
         missing_value: float,
@@ -20,6 +25,7 @@ class ModelImputer(BaseTransformer):
         self.fit_cols: list[str] | None = None
 
     def fit(self, df: pd.DataFrame):
+        """Fit the imputation model."""
         self.fit_cols = [x for x in df.columns if x != self.target_col]
         train, test = self._get_train_test(df.copy())
         self.model.fit(train[self.fit_cols], train[self.target_col])
@@ -28,6 +34,7 @@ class ModelImputer(BaseTransformer):
         logger.debug("MAE: %s", sm.mean_absolute_error(test[self.target_col], self.model.predict(test[self.fit_cols])))
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Impute missing values in a dataframe."""
         if self.fit_cols is None:
             msg = "Must fit before transforming"
             raise RuntimeError(msg)

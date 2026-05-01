@@ -1,5 +1,6 @@
+"""Feature pruning transformers."""
+
 from abc import ABC, abstractmethod
-from typing import Dict, List
 
 import pandas as pd
 
@@ -7,8 +8,9 @@ from mltools.data.transform import BaseTransformer
 
 
 class BasePruner(BaseTransformer, ABC):
-    """
-    An abstract class for feature selection. The object contains information on
+    """Provide a base class for feature selection.
+
+    The object contains information on
     the columns to drop.
     """
 
@@ -18,6 +20,7 @@ class BasePruner(BaseTransformer, ABC):
 
     @property
     def drop_cols(self):
+        """Return columns selected for removal."""
         if not self._is_fit:
             msg = "Must fit before accessing drop_cols"
             raise RuntimeError(msg)
@@ -25,12 +28,14 @@ class BasePruner(BaseTransformer, ABC):
 
     @abstractmethod
     def fit(self, df: pd.DataFrame) -> None:
-        pass
+        """Fit the pruner."""
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Drop selected columns from the dataframe."""
         return df.drop(columns=self.drop_cols)
 
     def __repr__(self) -> str:
+        """Return the pruner name."""
         return self.__class__.__name__
 
 
@@ -43,6 +48,7 @@ class FeatureSelectionPipeline(BasePruner):
         self.waterfall_: dict[str, int] = {}
 
     def fit(self, df: pd.DataFrame) -> None:
+        """Fit each pruner in sequence."""
         dfc = df.copy()
         for pruner in self.pruners:
             dfc = pruner.fit_transform(dfc)

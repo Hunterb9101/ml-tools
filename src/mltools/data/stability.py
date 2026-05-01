@@ -1,3 +1,5 @@
+"""Stability index calculations."""
+
 import logging
 from collections.abc import Sequence
 from typing import Literal
@@ -8,10 +10,15 @@ import scipy.stats as ss
 
 import mltools.pandas as mtp
 
+logger = logging.getLogger(__name__)
+MAX_CATEGORY_WARNING = 50
+INDUSTRY_THRESHOLD = 0.2
 
-def si(old: Sequence, new: Sequence, bins: int=10, is_categorical: bool = False) -> float:
-    """
-    Calculate a stability index between two series. Input target scores for a
+
+def si(old: Sequence, new: Sequence, bins: int = 10, *, is_categorical: bool = False) -> float:
+    """Calculate a stability index between two series.
+
+    Input target scores for a
     Population Stability Index (PSI), or continuous feature samples for a Characteristic
     Stability Index (CSI).
 
@@ -35,9 +42,10 @@ def si(old: Sequence, new: Sequence, bins: int=10, is_categorical: bool = False)
     return _si_df(old, new, bins, is_categorical=is_categorical)["si"].sum()
 
 
-def _si_df(old: Sequence, new: Sequence, bins: int=10, is_categorical: bool = False) -> pd.DataFrame:
-    """
-    Calculate a stability index between two series. Input target scores for a
+def _si_df(old: Sequence, new: Sequence, bins: int = 10, *, is_categorical: bool = False) -> pd.DataFrame:
+    """Calculate a stability index dataframe between two series.
+
+    Input target scores for a
     Population Stability Index (PSI), or continuous feature samples for a Characteristic
     Stability Index (CSI).
 
@@ -72,10 +80,12 @@ def _counts_by_quantile(
     old: Sequence,
     new: Sequence,
     bins: int = 10,
+    *,
     clip_bounds: bool = True,
     tol=1e-3,
 ) -> pd.DataFrame:
-    """
+    """Count old and new observations by quantile bins.
+
     Parameters
     ----------
     old: Sequence
@@ -113,7 +123,8 @@ def _counts_by_quantile(
 
 
 def _counts_by_category(old: pd.Series, new: pd.Series) -> pd.DataFrame:
-    """
+    """Count old and new observations by category.
+
     Parameters
     ----------
     old: Sequence
@@ -134,8 +145,13 @@ def _counts_by_category(old: pd.Series, new: pd.Series) -> pd.DataFrame:
     df = df.merge(new_counts, how="left", left_on="bin", right_on=new_counts.index)
     df = df.fillna(0).astype({"old": "int64", "new": "int64"}, copy=False)
 
-    if len(df) > 50:
-        logging.warning("Found over 50 unique categories between series %s and %s.", old.name, new.name)
+    if len(df) > MAX_CATEGORY_WARNING:
+        logger.warning(
+            "Found over %s unique categories between series %s and %s.",
+            MAX_CATEGORY_WARNING,
+            old.name,
+            new.name,
+        )
     return df
 
 
@@ -143,35 +159,44 @@ def si_is_signifcant(
     old: Sequence,
     new: Sequence,
     bins: int = 10,
-    is_categorical: bool = False,
-    method: Literal["chisq", "norm", "industry"] = "norm",
-    quantile: float = 0.95,
+    **kwargs,
 ) -> bool:
+    """Return whether the observed stability index is significant."""
+    allowed_kwargs = {"is_categorical", "method", "quantile"}
+    unexpected_kwargs = set(kwargs) - allowed_kwargs
+    if unexpected_kwargs:
+        msg = f"Unexpected arguments: {sorted(unexpected_kwargs)}"
+        raise TypeError(msg)
+    is_categorical = kwargs.get("is_categorical", False)
+    method: Literal["chisq", "norm", "industry"] = kwargs.get("method", "norm")
+    quantile = kwargs.get("quantile", 0.95)
+
     observed = si(old=old, new=new, bins=bins, is_categorical=is_categorical)
     if method == "chisq":
         return observed > critical_value_chi2(len_old=len(old), len_new=len(new), n_bins=bins, quantile=quantile)
     if method == "norm":
         return observed > critical_value_norm(len_old=len(old), len_new=len(new), n_bins=bins, quantile=quantile)
     if method == "industry":
-        return observed > 0.2
+        return observed > INDUSTRY_THRESHOLD
     msg = f"Unexpected method: {method}"
     raise ValueError(msg)
 
 
-
 def critical_value_norm(len_new: int, len_old: int, n_bins: int, quantile: float = 0.95) -> float:
-    """
-    The recommended method from https://scholarworks.wmich.edu/cgi/viewcontent.cgi?article=4249&context=dissertations
+    """Calculate the normal-distribution critical value.
+
+    The method from https://scholarworks.wmich.edu/cgi/viewcontent.cgi?article=4249&context=dissertations
     to determine statistically significant cutoffs for PSI distribution differences.
 
     This method agrees closely with the Chi-Squared test values.
     """
     z = ss.norm.ppf(quantile)
-    return (1/len_new + 1/len_old) * (n_bins - 1) + z * (1/len_new + 1/len_old) * np.sqrt(2* (n_bins - 1))
+    return (1 / len_new + 1 / len_old) * (n_bins - 1) + z * (1 / len_new + 1 / len_old) * np.sqrt(2 * (n_bins - 1))
 
 
 def critical_value_chi2(len_new: int, len_old: int, n_bins: int, quantile: float = 0.95) -> float:
-    """
+    """Calculate the chi-squared critical value.
+
     The second method described in https://scholarworks.wmich.edu/cgi/viewcontent.cgi?article=4249&context=dissertations
     to determine statistically significant cutoffs for PSI distribution differences.
 
@@ -180,4 +205,4 @@ def critical_value_chi2(len_new: int, len_old: int, n_bins: int, quantile: float
     distribution.
     """
     z = ss.chi2.ppf(q=quantile, df=n_bins - 1)
-    return z * (1/len_new + 1/len_old)
+    return z * (1 / len_new + 1 / len_old)

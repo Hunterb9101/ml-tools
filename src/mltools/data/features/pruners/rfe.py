@@ -1,4 +1,6 @@
-from typing import Any, Dict, Optional
+"""Recursive feature elimination pruner."""
+
+from typing import Any
 
 import pandas as pd
 from sklearn.feature_selection import RFE
@@ -7,6 +9,8 @@ from mltools.data.features.pruners import BasePruner
 
 
 class RFEPruner(BasePruner):
+    """Prune features using sklearn recursive feature elimination."""
+
     def __init__(self, model: Any, n_features_to_select: int, target_col: str):
         super().__init__()
         self.model = model
@@ -19,7 +23,9 @@ class RFEPruner(BasePruner):
 
     def fit(self, df: pd.DataFrame) -> None:
         """Fit the feature selector to the data. This should be done on the training data only."""
-        assert self.target_col in df.columns, f"Target column {self.target_col} not in df columns"
+        if self.target_col not in df.columns:
+            msg = f"Target column {self.target_col} not in df columns"
+            raise ValueError(msg)
         self.selector = RFE(self.model, n_features_to_select=1)
         self.selector.fit(df.drop(columns=self.target_col), df[self.target_col])
         self.ranking_ = dict(zip(df.columns, self.selector.ranking_))

@@ -13,7 +13,7 @@ def ex_fsp() -> kpf.FeatureSelectionPipeline:
             self._drop_cols = []
             self._is_fit = False
 
-        def fit(self, df): # noqa: ARG002
+        def fit(self, _df):
             self._drop_cols = ["a"]
             self._is_fit = True
 
@@ -23,7 +23,7 @@ def ex_fsp() -> kpf.FeatureSelectionPipeline:
             self._drop_cols = []
             self._is_fit = False
 
-        def fit(self, df): # noqa: ARG002
+        def fit(self, _df):
             self._drop_cols = ["b"]
             self._is_fit = True
 

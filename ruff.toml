@@ -76,5 +76,5 @@ ban-relative-imports = "all"
 
 [format]
 quote-style = "double"
-indent-style = "tab"
+indent-style = "space"
 line-ending = "auto"

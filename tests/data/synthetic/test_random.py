@@ -1,4 +1,5 @@
 # pylint: disable=W0212
+from datetime import UTC
 from datetime import datetime as dt
 
 import numpy as np
@@ -15,7 +16,7 @@ def test_rand_alphanum_item(length):
 
 
 def test_rand_alphanum_item_0_len():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Invalid length"):
         random.rand_alphanum_item(length=0)
 
 
@@ -29,7 +30,10 @@ def test_rand_alphanum_item_0_len():
 )
 def test_rand_date_item(start, end, fmt):
     r = random.rand_date_item(start=start, end=end, fmt=fmt)
-    assert dt.strptime(start, fmt) <= dt.strptime(r, fmt) <= dt.strptime(end, fmt)
+    start_dt = dt.strptime(start, fmt).replace(tzinfo=UTC)
+    result_dt = dt.strptime(r, fmt).replace(tzinfo=UTC)
+    end_dt = dt.strptime(end, fmt).replace(tzinfo=UTC)
+    assert start_dt <= result_dt <= end_dt
 
 
 @pytest.mark.parametrize(("val", "expected"), [((0, 1, 2), 0), ([1, 2, 3], 6)])
@@ -41,7 +45,7 @@ def test_iterable_multiply(val, expected):
     ("size", "expected"),
     [
         (None, 0),
-        (5, np.array([0,0,0,0,0])),
+        (5, np.array([0, 0, 0, 0, 0])),
         ((2, 3), np.array([0, 0, 0, 0, 0, 0]).reshape(2, 3)),
     ],
 )
