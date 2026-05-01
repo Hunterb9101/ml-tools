@@ -80,9 +80,8 @@ class SchemaList:
 
     def contains(self, ser: Sequence) -> np.ndarray:
         """Return a mask indicating which values are present in the list."""
-        if not isinstance(ser, pd.Series):
-            ser = pd.Series(ser)
-        return np.array(ser.isin(self.vals))
+        series = ser if isinstance(ser, pd.Series) else pd.Series(ser)
+        return np.array(series.isin(self.vals))
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize the list validator to a dictionary."""

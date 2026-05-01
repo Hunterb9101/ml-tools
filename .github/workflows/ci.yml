@@ -29,7 +29,7 @@ jobs:
           .venv/bin/python -m pip install -e ".[tests]"
 
       - name: Mypy
-        run: .venv/bin/python -m mypy --config-file .mypy.ini src tests
+        run: .venv/bin/python -m mypy --config-file mypy.ini src tests
 
       - name: Ruff
         run: .venv/bin/python -m ruff check"

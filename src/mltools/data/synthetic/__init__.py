@@ -64,7 +64,7 @@ class MockManagerClassification:
         return self._columns
 
     @columns.setter
-    def columns(self, value: list[str]):
+    def columns(self, value: list[MockColumn | DupColumn]):
         self._columns = value
 
         self._useful: list[MockColumn | DupColumn] = []
