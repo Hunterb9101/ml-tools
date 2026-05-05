@@ -1,5 +1,5 @@
 pytest
 pytest-cov
 mypy
-pylint
+ruff
 types-pyyaml

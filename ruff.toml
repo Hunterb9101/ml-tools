@@ -1,0 +1,80 @@
+line-length = 120
+indent-width = 4
+
+target-version = "py310"
+
+[lint]
+exclude = ["*.ipynb"]
+select = [
+    "ASYNC",
+    "S",
+    "BLE",
+    "FBT",
+    "A",
+    "COM",
+    "C4",
+    "DTZ",
+    "EM",
+    "ICN",
+    "LOG",
+    "G",
+    "INP",
+    "PIE",
+    "T20",
+    "PYI",
+    "PT",
+    "Q",
+    "RSE",
+    "RET",
+    "SLF",
+    "SIM",
+    "TID252",
+    "TD001",
+    "TD004",
+    "TD005",
+    "TD006",
+    "TD007",
+    "TC",
+    "ARG",
+    "PTH",
+    "I",
+    "C90",
+    "PD",
+    "N",
+    "E",
+    "W",
+    "DOC",
+    "D",
+    "PGH004",
+    "PLE",
+    "PLR",
+    "UP",
+    "FURB",
+    "RUF"
+]
+fixable = ["ALL"]
+
+[lint.per-file-ignores]
+"tests/*" = [
+    "S101",
+    "SLF001",
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "PLR2004",
+    "ARG001",
+    "ARG005"
+]
+
+[lint.pydocstyle]
+convention = "numpy"
+
+[lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"

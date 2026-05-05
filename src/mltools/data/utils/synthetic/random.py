@@ -1,0 +1,57 @@
+"""Random synthetic value generators."""
+
+import string
+from collections.abc import Callable, Sequence
+from datetime import UTC
+from datetime import datetime as dt
+from typing import Any
+
+import numpy as np
+
+IntScalarOrTuple = int | tuple[int] | None
+Number = float | int
+
+
+def _iterable_multiply(a: Sequence[Number]) -> Number:
+    res: Number = 1
+    for i in a:
+        res *= i
+    return res
+
+
+def _ndim_random(fn: Callable, size: IntScalarOrTuple, **kwargs) -> Any | np.ndarray:
+    if not size:
+        return fn(**kwargs)
+    sz = (size,) if isinstance(size, int) else size
+    objs = int(_iterable_multiply(sz))
+    arr: np.ndarray = np.array([fn(**kwargs) for _ in range(objs)]).reshape(sz)
+    return arr
+
+
+def rand_alphanum_item(length: int = 12) -> str:
+    """Generate a random alphanumeric string."""
+    if length <= 0:
+        msg = f"Invalid length={length}"
+        raise ValueError(msg)
+    alphanum = list(string.ascii_letters + string.digits)
+    return "".join(np.random.choice(alphanum, size=length))
+
+
+def rand_date_item(start: str, end: str, fmt: str) -> str:
+    """Generate a random date string between pre-formatted bounds."""
+    start_dt = dt.strptime(start, fmt).replace(tzinfo=UTC)
+    end_dt = dt.strptime(end, fmt).replace(tzinfo=UTC)
+    start_ts, end_ts = dt.timestamp(start_dt), dt.timestamp(end_dt)
+    val_ts = np.random.randint(low=int(start_ts), high=int(end_ts))
+    val_dt = dt.fromtimestamp(val_ts, tz=UTC)
+    return dt.strftime(val_dt, fmt)
+
+
+def rand_alphanum(length: int = 12, size: IntScalarOrTuple = None) -> str | np.ndarray:
+    """Generate one or more random alphanumeric strings."""
+    return _ndim_random(rand_alphanum_item, size=size, length=length)
+
+
+def rand_date(start: str, end: str, fmt: str, size: IntScalarOrTuple = None) -> str | np.ndarray:
+    """Generate one or more random date strings."""
+    return _ndim_random(rand_date_item, size=size, start=start, end=end, fmt=fmt)
