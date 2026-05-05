@@ -8,7 +8,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 
-from mltools.data.contracts import DatasetSchema, FittedTransformerSet, FoldDesignMatrix
+from mltools.data.schema import DatasetSchema, FittedTransformerSet, FoldDesignMatrix
 from mltools.models.arch import SklearnModel, Task
 
 

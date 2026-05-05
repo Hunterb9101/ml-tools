@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
 
-    from mltools.data.contracts import DatasetSchema
+    from mltools.data.schema import DatasetSchema
 
 
 def validate_prediction_frame(

@@ -8,8 +8,6 @@ import numpy as np
 import pandas as pd
 import scipy.stats as ss
 
-import mltools.pandas as mtp
-
 logger = logging.getLogger(__name__)
 MAX_CATEGORY_WARNING = 50
 INDUSTRY_THRESHOLD = 0.2
@@ -113,7 +111,7 @@ def _counts_by_quantile(
     if clip_bounds:
         new_arr = np.clip(new_arr, a_min=old_arr.min() + tol, a_max=old_arr.max() - tol)
 
-    int_range = mtp.map_to_series(pd.Series(new_arr), df["quant"].cat.categories)
+    int_range = map_to_series(pd.Series(new_arr), df["quant"].cat.categories)
     new_dist = pd.DataFrame(int_range, columns=["quant"], dtype="category")
     new_dist["new"] = 0
     df["new"] = new_dist.groupby("quant", observed=False).count().reset_index()["new"]
@@ -206,3 +204,35 @@ def critical_value_chi2(len_new: int, len_old: int, n_bins: int, quantile: float
     """
     z = ss.chi2.ppf(q=quantile, df=n_bins - 1)
     return z * (1 / len_new + 1 / len_old)
+
+
+def map_to_series(s: pd.Series, categories: list[pd.Interval]) -> pd.Series:
+    """
+    Map a continuous variable to a corresponding interval range.
+
+    Parameters
+    ----------
+    s: pd.Series
+        A series to map
+    categories: List[pd.Interval]
+        A list of mapping categories
+
+    Returns
+    -------
+    pd.Series
+        A mapped series
+    """
+    q = pd.Series(np.zeros(len(s)), dtype="object")
+    used = pd.Series(np.zeros(len(s)))
+    for c in categories:
+        cond_a = s > c.left
+        if c.closed_left:
+            cond_a = s >= c.left
+
+        cond_b = s < c.right
+        if c.closed_right:
+            cond_b = s <= c.right
+        q.loc[cond_a & cond_b] = c
+        used.loc[cond_a & cond_b] = 1
+    q.loc[used == 0] = None
+    return q

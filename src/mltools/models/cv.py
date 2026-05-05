@@ -11,7 +11,7 @@ from pydantic import BaseModel, ConfigDict
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
 
-    from mltools.data.contracts import FoldDesignMatrix
+    from mltools.data.schema import FoldDesignMatrix
     from mltools.models.arch.base import BaseModelWrapper
 else:
     FoldDesignMatrix: TypeAlias = Any

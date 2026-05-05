@@ -7,7 +7,7 @@ from typing import Self
 import pandas as pd
 import pytest
 
-from mltools.data.contracts import DatasetSchema, FittedTransformerSet, FoldDesignMatrix
+from mltools.data.schema import DatasetSchema, FittedTransformerSet, FoldDesignMatrix
 from mltools.models.arch.base import BaseModelWrapper, Task
 from mltools.models.arch.base import FoldDesignMatrix as BaseFoldDesignMatrix
 

@@ -4,11 +4,12 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from importlib import import_module
 from typing import Any, Protocol, Self
 
 import numpy as np
 import pandas as pd
+
+from mltools.data.schema import feature_columns as schema_feature_columns
 
 BINARY_CLASS_COUNT = 2
 TWO_DIMENSIONS = 2
@@ -189,6 +190,4 @@ class BaseModelWrapper(ABC):
 
 
 def _feature_columns(df: pd.DataFrame, schema: Any) -> list[str]:
-    contracts = import_module("mltools.data.contracts")
-    feature_columns = contracts.feature_columns
-    return list(feature_columns(df, schema))
+    return list(schema_feature_columns(df, schema))

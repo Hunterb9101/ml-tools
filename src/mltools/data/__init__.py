@@ -1,6 +1,6 @@
 """Data processing utilities."""
 
-from mltools.data.contracts import (
+from mltools.data.schema import (
     DatasetSchema,
     FittedTransformerSet,
     FoldDesignMatrix,
@@ -9,7 +9,7 @@ from mltools.data.contracts import (
     schema_columns,
     validate_required_columns,
 )
-from mltools.data.splits import assign_folds, assign_holdout
+from mltools.data.split import assign_folds, assign_holdout
 
 __all__ = [
     "DatasetSchema",

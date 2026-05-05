@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from mltools.data.contracts import DatasetSchema, FittedTransformerSet, FoldDesignMatrix
+from mltools.data.schema import DatasetSchema, FittedTransformerSet, FoldDesignMatrix
 from mltools.models.arch import LightGBMModel, Task
 
 
