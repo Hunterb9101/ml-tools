@@ -69,7 +69,9 @@ class FittedTransformerSet(pdt.BaseModel):
         """Return transformer values."""
         return self.transformers.values()
 
-
+# Pydantic warns because the required public field name `schema` shadows
+# BaseModel.schema(). The PRD contract uses `fold.schema`, so the class-level
+# warning is intentionally suppressed at definition time.
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", message='Field name "schema".*', category=UserWarning)
 

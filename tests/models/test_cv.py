@@ -92,6 +92,7 @@ def test_train_cv_rejects_reused_model_instances() -> None:
 
 def test_oof_predictions_concatenate_validation_predictions() -> None:
     result = CVTrainingResult(
+        id_col="id",
         fold_results=[
             FoldTrainingResult(
                 fold_id=0,
@@ -116,6 +117,7 @@ def test_oof_predictions_concatenate_validation_predictions() -> None:
 
 def test_train_predictions_concatenate_train_predictions() -> None:
     result = CVTrainingResult(
+        id_col="id",
         fold_results=[
             FoldTrainingResult(
                 fold_id=0,
@@ -140,6 +142,7 @@ def test_train_predictions_concatenate_train_predictions() -> None:
 
 def test_oof_predictions_reject_duplicate_ids_when_id_column_is_available() -> None:
     result = CVTrainingResult(
+        id_col="id",
         fold_results=[
             FoldTrainingResult(
                 fold_id=0,

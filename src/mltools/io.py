@@ -15,20 +15,10 @@ _OBJECT_FORMATS_BY_SUFFIX = {
     ".json": "json",
     ".txt": "text",
 }
-_OBJECT_FORMAT_ALIASES = {
-    "pkl": "pickle",
-    "pickle": "pickle",
-    "json": "json",
-    "txt": "text",
-    "text": "text",
-}
+
 _DATAFRAME_FORMATS_BY_SUFFIX = {
     ".parquet": "parquet",
     ".csv": "csv",
-}
-_DATAFRAME_FORMAT_ALIASES = {
-    "parquet": "parquet",
-    "csv": "csv",
 }
 
 
@@ -55,7 +45,6 @@ def write_file(obj: Any, path: str | Path, *, format: str | None = None) -> Path
         output_path,
         supplied_format=format,
         suffix_formats=_OBJECT_FORMATS_BY_SUFFIX,
-        format_aliases=_OBJECT_FORMAT_ALIASES,
         artifact_kind="object artifact",
     )
     _ensure_parent_dir(output_path)
@@ -98,7 +87,6 @@ def read_file(path: str | Path, *, format: str | None = None) -> Any:  # noqa: A
         input_path,
         supplied_format=format,
         suffix_formats=_OBJECT_FORMATS_BY_SUFFIX,
-        format_aliases=_OBJECT_FORMAT_ALIASES,
         artifact_kind="object artifact",
     )
 
@@ -145,7 +133,6 @@ def write_dataframe(
         output_path,
         supplied_format=None,
         suffix_formats=_DATAFRAME_FORMATS_BY_SUFFIX,
-        format_aliases=_DATAFRAME_FORMAT_ALIASES,
         artifact_kind="dataframe artifact",
     )
     _ensure_parent_dir(output_path)
@@ -181,7 +168,6 @@ def read_dataframe(path: str | Path, **kwargs: Any) -> pd.DataFrame:
         input_path,
         supplied_format=None,
         suffix_formats=_DATAFRAME_FORMATS_BY_SUFFIX,
-        format_aliases=_DATAFRAME_FORMAT_ALIASES,
         artifact_kind="dataframe artifact",
     )
 
@@ -218,14 +204,16 @@ def _resolve_format(
     *,
     supplied_format: str | None,
     suffix_formats: dict[str, str],
-    format_aliases: dict[str, str],
     artifact_kind: str,
 ) -> str:
     """Resolve a file format from an override or a path suffix."""
     if supplied_format is not None:
         normalized_format = supplied_format.lower().lstrip(".")
-        if normalized_format in format_aliases:
-            return format_aliases[normalized_format]
+        suffix_format = suffix_formats.get(f".{normalized_format}")
+        if suffix_format is not None:
+            return suffix_format
+        if normalized_format in set(suffix_formats.values()):
+            return normalized_format
         _raise_unsupported_format(supplied_format, artifact_kind)
 
     suffix = path.suffix.lower()

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from typing import TYPE_CHECKING, Any, TypeAlias
 
 import pandas as pd
@@ -34,6 +35,7 @@ class CVTrainingResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     fold_results: list[FoldTrainingResult]
+    id_col: str | None = None
 
     def oof_predictions(self) -> pd.DataFrame:
         """Concatenate validation predictions across folds.
@@ -44,7 +46,7 @@ class CVTrainingResult(BaseModel):
             Out-of-fold prediction frame.
         """
         frames = [fold_result.val_predictions for fold_result in self.fold_results]
-        return _concat_prediction_frames(frames, validate_duplicate_ids=True)
+        return _concat_prediction_frames(frames, id_col=self.id_col, validate_duplicate_ids=True)
 
     def train_predictions(self) -> pd.DataFrame:
         """Concatenate train predictions across folds.
@@ -55,7 +57,7 @@ class CVTrainingResult(BaseModel):
             Training prediction frame.
         """
         frames = [fold_result.train_predictions for fold_result in self.fold_results]
-        return _concat_prediction_frames(frames, validate_duplicate_ids=False)
+        return _concat_prediction_frames(frames, id_col=self.id_col, validate_duplicate_ids=False)
 
     def models(self) -> list[BaseModelWrapper]:
         """Return fitted fold model wrappers in fold order.
@@ -126,41 +128,44 @@ def train_cv(
             ),
         )
 
-    return CVTrainingResult(fold_results=fold_results)
+    return CVTrainingResult(fold_results=fold_results, id_col=_common_id_col(fold_list))
 
 
-def _concat_prediction_frames(frames: Sequence[pd.DataFrame], *, validate_duplicate_ids: bool) -> pd.DataFrame:
-    """Concatenate prediction frames and optionally validate inferred ids."""
+def _concat_prediction_frames(
+    frames: Sequence[pd.DataFrame],
+    *,
+    id_col: str | None,
+    validate_duplicate_ids: bool,
+) -> pd.DataFrame:
+    """Concatenate prediction frames and optionally validate duplicate ids."""
     if len(frames) == 0:
         return pd.DataFrame()
 
     result = pd.concat(frames, copy=False)
-    if validate_duplicate_ids:
-        id_col = _infer_id_column(result)
-        if id_col is not None and result[id_col].duplicated().any():
+    if validate_duplicate_ids and id_col is not None:
+        if id_col not in result.columns:
+            msg = f"prediction frame is missing id column {id_col!r}."
+            raise ValueError(msg)
+        if result[id_col].duplicated().any():
             msg = f"prediction frame contains duplicate ids in column {id_col!r}."
             raise ValueError(msg)
     return result
 
 
-def _infer_id_column(df: pd.DataFrame) -> str | None:
-    """Infer a prediction-frame id column when it is unambiguous."""
-    candidate_columns = [
-        column
-        for column in df.columns
-        if column != "prediction" and not column.startswith("score_")
-    ]
-    if len(candidate_columns) != 1:
+def _common_id_col(folds: Sequence[FoldDesignMatrix]) -> str | None:
+    """Return the common schema id column when every fold exposes one."""
+    raw_id_cols = [getattr(getattr(fold, "schema", None), "id_col", None) for fold in folds]
+    if any(id_col is None for id_col in raw_id_cols):
         return None
-    return candidate_columns[0]
+    id_cols = [str(id_col) for id_col in raw_id_cols]
+    unique_id_cols = set(id_cols)
+    if len(unique_id_cols) > 1:
+        msg = f"fold schemas must use the same id column, got: {sorted(unique_id_cols)}."
+        raise ValueError(msg)
+    return id_cols[0]
 
 
 def _duplicates(values: Sequence[int]) -> list[int]:
-    """Return duplicated integer values in first duplicate order."""
-    seen: set[int] = set()
-    duplicates: list[int] = []
-    for value in values:
-        if value in seen and value not in duplicates:
-            duplicates.append(value)
-        seen.add(value)
-    return duplicates
+    """Return duplicated integer values in first occurrence order."""
+    counts = Counter(values)
+    return [value for value in dict.fromkeys(values) if counts[value] > 1]

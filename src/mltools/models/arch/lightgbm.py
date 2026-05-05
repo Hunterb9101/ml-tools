@@ -9,12 +9,11 @@ import numpy as np
 from sklearn.metrics import balanced_accuracy_score
 from sklearn.preprocessing import LabelEncoder
 
-from mltools.models.arch.base import BaseModelWrapper, FoldDesignMatrix, Task
+from mltools.models.arch.base import BINARY_CLASS_COUNT, BaseModelWrapper, FoldDesignMatrix, Task
 
 if TYPE_CHECKING:
     import pandas as pd
 
-BINARY_CLASS_COUNT = 2
 PROBABILITY_THRESHOLD = 0.5
 
 

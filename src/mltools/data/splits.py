@@ -88,6 +88,12 @@ def assign_folds(
     -------
     pd.DataFrame
         Copy of ``df`` with a fold id column.
+
+    Notes
+    -----
+    This helper intentionally only chooses between shuffled K-fold and shuffled
+    stratified K-fold. Grouped, time-series, and leakage-sensitive fold policies
+    should be owned by caller code or a future explicit splitter helper.
     """
     _validate_output_column(df, fold_col)
     _validate_n_splits(df, n_splits)
