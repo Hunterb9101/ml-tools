@@ -44,7 +44,7 @@ jobs:
     environment: pypi
     permissions:
       id-token: write
-      contents: read
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -63,5 +63,20 @@ jobs:
       - name: Check package metadata
         run: python -m twine check dist/*
 
+      - name: Read package version
+        id: package-version
+        run: |
+          version=$(python -c "import sys; sys.path.insert(0, 'src'); import mltools; print(mltools.__version__)")
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.package-version.outputs.version }}
+        run: |
+          gh release create "v${VERSION}" dist/* \
+            --title "v${VERSION}" \
+            --notes "Published hb-mltools ${VERSION} to PyPI."
